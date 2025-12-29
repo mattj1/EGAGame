@@ -1,12 +1,8 @@
 {$X+}
-Program game;
+Program app;
 
-Uses engine, text, ega, crt, level, fixed;
+Uses engine, text, ega, crt, level, fixed, gamedata;
 
-type TResources = Record
-  sprite_cursor: EGASprite;
-  sprite_player: EGASprite;
-end;
 
 Type TPageInfo = Record
   dirty_tiles: array[0..240] Of byte;
@@ -14,10 +10,9 @@ End;
 
 
 Var
+
   pages: array[0..1] Of TPageInfo;
   font_data: array[0..3071] of byte;
-  
-Var 
   tile: array[0..8192] Of byte;
   f: file;
   pg: word;
@@ -27,8 +22,9 @@ Var
   dest_x, dest_y: fix16;
   cursor_x, cursor_y: integer;
   map: TMap;
-  res: TResources;
-
+  isMoving: boolean;
+  moveLine: TLine;
+  moveCount: word;
 
 
 const mapData: array[0 .. 239] of word = (
@@ -116,8 +112,9 @@ Procedure Draw;
 
 Var i: integer;
 var x, y: integer;
-  dx: fix16;
+  dx, dy, l: fix16;
   mouse_buttons: word;
+  pt: LinePoint;
 Begin
 
   player_input := 0;
@@ -129,24 +126,24 @@ Begin
 
   If I_IsKeyDown(kEsc) Then Loop_Cancel;
 
-  mark_dirty_tiles_around_bb(f2i(player_x) - 16, f2i(player_y) - 16, f2i(player_x) + 40, f2i(player_y) + 32);
+  mark_dirty_tiles_around_bb(player_x - 16, player_y - 16, player_x + 40, player_y + 32);
   mark_dirty_tiles_around_bb(cursor_x, cursor_y, cursor_x + 16, cursor_y + 16);
 
   If (player_input And 1) <> 0 Then
     Begin
-      inc(player_y, -i2f(1));
+      inc(player_y, 1);
     End;
   If (player_input And 2) <> 0 Then
     Begin
-      inc(player_y, i2f(1));
+      inc(player_y, 1);
     End;
   If (player_input And 4) <> 0 Then
     Begin
-      inc(player_x, -i2f(1));
+      inc(player_x, 1);
     End;
   If (player_input And 8) <> 0 Then
     Begin
-      inc(player_x, i2f(1));
+      inc(player_x, 1);
     End;
 
   asm
@@ -156,23 +153,37 @@ Begin
     mov cursor_x, cx
     mov cursor_y, dx
 end;
+  { TODO: Detect when the mouse actually goes down }
 
   cursor_x := cursor_x div 2; 
 
   if (mouse_buttons and 1) <> 0 then begin
-    dest_x := i2f(cursor_x);
-    dest_y := i2f(cursor_y);
+    dest_x := cursor_x;
+    dest_y := cursor_y;
+
+    if (player_x <> dest_x) or (player_y <> dest_y) then begin
+    isMoving := True;
+    Line_Init(moveLine, player_x, player_y, dest_x, dest_y);
+    moveCount := 0;
+    end;
   end;
 
-    dx := (dest_x - player_x);
-    if (dx > 8) then dx := 8;
-    if (dx < -8) then dx := -8;
-    inc(player_x, dx);
+  if isMoving then begin
+    inc(moveCount, 244);
 
-    dx := (dest_y - player_y);
-    if (dx > 8) then dx := 8;
-    if (dx < -8) then dx := -8;
-    inc(player_y, dx);
+    while (moveCount >= 256) do begin
+      getPoint(moveLine, pt);
+      Dec(moveCount, 256);
+
+      player_x := pt.x;
+      player_y := pt.y;
+
+      if (pt.x = moveLine.x1) and (pt.y = moveLine.y1) then begin
+        isMoving := false;
+        Exit;
+      end;
+    end;
+  end;
 
     {mark_dirty_tiles_around_bb(player_x - 16, player_y - 16, player_x + 40, player_y + 32);}
   engine.pressedKeys := [];
@@ -209,7 +220,7 @@ end;
 
    
   {player_y := player_y div 2;}
-  EGA_DrawSpriteSlow(f2i(player_x), f2i(player_y), res.sprite_player);
+  EGA_DrawSpriteSlow(player_x, player_y, res.sprite_player);
   EGA_DrawSpriteSlow(cursor_x, cursor_y, res.sprite_cursor);
   
   {
@@ -270,6 +281,12 @@ Begin
   blockread(f, font_data, 1);
   System.Close(f);
 
+  GetMem(res.sqrt, 65528);
+  assign(f, 'data\sqrt.bin');
+  reset(f, 65528);
+  blockread(f, res.sqrt^, 1);
+  System.Close(f);
+
   EGA_LoadSprite('player.ega', res.sprite_player);
   EGA_LoadSprite('cursor.ega', res.sprite_cursor);
   
@@ -280,12 +297,11 @@ Begin
   Map_Alloc(20, 18, map);
   For i := 0 to 239 do map.tiles^[i].t := mapData[i];
 
-  writeln(fix16Div(i2f(120), i2f(8)));
-  
+  writeln('Fixed point: Max coord val in pixels: ', f2i(32767));
 
   
-  {readln;
-  Exit;
+  readln;
+  {Exit;
   }
   
 {
