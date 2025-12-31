@@ -1,13 +1,13 @@
 @config -set cpu cycles 360000
-@del app.exe
-@del *.tpu
-@del *.obj
+@del src\app.exe
+@del src\*.tpu
+@del src\*.obj
 
-tasm /ml /l test.asm
+tasm /ml /l src\test.asm
 @if errorlevel 1 goto DONE
-bpc app.pas
+bpc src\app.pas
 @config -set cpu cycles 2400
-app.exe
+src\app.exe
 :DONE
 @config -set cpu cycles 3000
 

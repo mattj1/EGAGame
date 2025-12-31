@@ -1,10 +1,14 @@
 unit level;
 
 interface
+
+const TILEFLAG_SOLID = 1;
+
 type
   PTile = ^TTile;
   TTile = record
     t:word;
+    flags: word;
   end;
 
   TTileRef = record
@@ -14,10 +18,14 @@ type
 
   TileArray = array[0..1024] of TTile;
 
+  PMap = ^TMap;
   TMap = record
     width, height: word;
     tiles: ^TileArray;
   end;
+
+var
+  currentMap: PMap;
 
 function Map_Alloc(width, height: word; var map: TMap): boolean;
 function Map_TileAt(var map: TMap; x, y: word): PTile;
@@ -32,6 +40,8 @@ begin
   GetMem(map.tiles, sizeof(TTile) * width * height);
 
   FillChar(map.tiles^, sizeof(TTile) * width * height, 0);
+
+  currentMap := @map;
 end;
 
 function Map_TileAt(var map: TMap; x, y: word): PTile;

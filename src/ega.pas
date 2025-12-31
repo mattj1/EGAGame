@@ -1,6 +1,16 @@
 unit ega;
+{$ifdef PLATFORM_DOS}
 {$L TEST.OBJ}
+{$endif}
 interface
+
+   {$ifdef PLATFORM_DESKTOP}
+uses
+   raylib,
+   sysutils;
+   {$else}
+   
+   {$endif}
 
 type 
   byte_ptr = ^byte;
@@ -12,17 +22,18 @@ type
     
     planes_and: word;
     planes_or: word;
-
+{$ifdef PLATFORM_DOS}
     data: Pointer;
+{$else}
+    data: TImage;
+{$endif}
   end;
-
 
 procedure EGA_Init;
 procedure EGA_SetPlanes(planes_mask: byte);
 procedure EGA_Close;
-procedure EGA_DrawTileFast(x, y, src_seg, src_offs, dest_seg: word);
 
-procedure draw_tile_fast(x, y: word; vmem_offs: word);
+procedure EGA_DrawTileFast(x, y: word; vmem_offs: word);
 procedure EGA_DrawSpriteFast(x, y: integer; var sprite: EGASprite);
 procedure EGA_DrawSpriteSlow(x, y: integer; var sprite: EGASprite);
 procedure setup_ega_for_masked_writes;
@@ -30,7 +41,7 @@ procedure set_rotate(op, rotate: byte);
 procedure EGA_SetDrawPage(p: word);
 procedure EGA_ShowPage(p: word);
 procedure set_mask(bit_mask: byte);
-procedure WaitVerticalRetrace;
+procedure EGA_WaitVerticalRetrace;
 procedure EGA_ClearScreen;
 
 
@@ -41,46 +52,78 @@ procedure EGA_DrawSpriteMaskFast2(src_seg, src_offs, src_skip, dest_seg, dest_of
 
 function EGA_LoadSprite(path: string; var out: EGASprite): boolean;
 
+{$ifdef PLATFORM_DESKTOP}
+function EGA_Raylib_GetBackbuffer: TImage;
+{$endif}
+
 implementation
 
+{$ifdef PLATFORM_DOS}
 procedure EGA_Init; external;
 procedure EGA_SetPlanes(planes_mask: byte); External;
-procedure EGA_DrawTileFast(x, y, src_seg, src_offs, dest_seg: word); external;
+procedure EGA_DrawTileFast2(x, y, src_seg, src_offs, dest_seg: word); external;
 procedure EGA_DrawSpriteMaskFast2(
       src_seg, src_offs, src_skip, dest_seg, dest_offs, dest_rewind, num_cols, num_rows: word);
       external;
+{$else}
+var
+  mainImage: TImage;
+  mainTexture: TTexture;
+procedure EGA_Init;
+begin
+   InitWindow(320 * 2, 200 * 2, 'NEO');
+
+   //SetTraceLogLevel(LOG_WARNING);
+   SetTargetFPS(60);
+
+  mainImage := GenImageColor(320, 200, BLANK);
+  mainTexture := LoadTextureFromImage(mainImage);
+  SetTextureFilter(mainTexture, TEXTURE_FILTER_POINT);
+end;
+procedure EGA_SetPlanes(planes_mask: byte);
+begin
+end;
+procedure EGA_DrawSpriteMaskFast2(
+      src_seg, src_offs, src_skip, dest_seg, dest_offs, dest_rewind, num_cols, num_rows: word);
+begin
+end;
+{$endif}
+
+
+
 
 var 
    i, p, x, y, o: integer;
    draw_segment: word;
 
+
+
+procedure EGA_WaitVerticalRetrace;
 const
   INPUT_STATUS_1 = $3DA;  { EGA/VGA input status register }
   VRETRACE_BIT   = $08;   { Bit 3 indicates vertical retrace }
-
-{ Wait for vertical retrace to end }
-procedure WaitVRetraceEnd;
+{$ifdef PLATFORM_DESKTOP}
+var p: TVector2;
+{$endif}
 begin
-  while (Port[INPUT_STATUS_1] and VRETRACE_BIT) <> 0 do
-    { busy wait };
+   {$ifdef PLATFORM_DOS}
+   { Wait until we're not in retrace }
+   while (Port[INPUT_STATUS_1] and VRETRACE_BIT) <> 0 do;
+
+    { Wait for vertical retrace to start }
+ while (Port[INPUT_STATUS_1] and VRETRACE_BIT) = 0 do;
+   {$else}
+     p.x := 0;
+  p.y := 0;
+   UpdateTexture(mainTexture, mainImage.data);
+   DrawTextureEx(mainTexture, p, 0, 2, WHITE);
+   {$endif}
 end;
 
-{ Wait for vertical retrace to start }
-procedure WaitVRetraceStart;
-begin
-  while (Port[INPUT_STATUS_1] and VRETRACE_BIT) = 0 do
-    { busy wait };
-end;
-
-{ Complete vertical retrace synchronization }
-procedure WaitVerticalRetrace;
-begin
-  WaitVRetraceEnd;    { Wait until we're not in retrace }
-  WaitVRetraceStart;  { Wait for retrace to begin }
-end;
 
 procedure setup_ega_for_masked_writes;
 begin
+   {$ifdef PLATFORM_DOS}
    asm
       mov dx, $3ce
 
@@ -100,30 +143,36 @@ begin
       mov ax, $FF08
       out dx, ax
    end;
+   {$endif}
 end;
 
 procedure set_mask(bit_mask: byte);
 begin
+   {$ifdef PLATFORM_DOS}
    asm
       mov dx, $3ce
       mov al, 8
       mov ah, bit_mask
       out dx, ax
    end;
+   {$endif}
 end;
 
 procedure EGA_Close;
 begin
+   {$ifdef PLATFORM_DOS}
 asm
    mov al, $3
    mov ah, 0
    int $10
 end;
+   {$endif}
 end;
 
 procedure set_rotate(op, rotate: byte);
 var val: byte;
 begin
+   {$ifdef PLATFORM_DOS}
    val := (op shl 3) or rotate;
    asm
       mov dx, $3ce
@@ -131,6 +180,7 @@ begin
       mov ah, val
       out dx, ax
    end;
+   {$endif}
 end;
 
 {
@@ -144,6 +194,7 @@ end;
 
 procedure EGA_BeginDrawTiles;
 begin
+   {$ifdef PLATFORM_DOS}
    asm
       { Enable all planes }
       mov dx, $3c4
@@ -155,15 +206,18 @@ begin
       mov ax, $0105
       out dx, ax
    end;
+   {$endif}
 end;
 
 procedure EGA_EndDrawTiles;
 begin
+   {$ifdef PLATFORM_DOS}
    asm
-   mov dx, $3ce
-   mov ax, $0005
-   out dx, ax
+      mov dx, $3ce
+      mov ax, $0005
+      out dx, ax
    end;
+   {$endif}
 end;
 
 {
@@ -176,7 +230,7 @@ end;
    ########  ##     ## ##     ##  ###  ###  #######    ##    #### ######## ######## 
 }
 
-procedure draw_tile_fast(x, y: word; vmem_offs: word);
+procedure EGA_DrawTileFast(x, y: word; vmem_offs: word);
    var p: word;
    base_offs: word;
    srcseg, srcofs: word;
@@ -187,8 +241,10 @@ begin
    x := x shl 1;
    y := y shl 1;
    base_offs := x + (y shl 8) + (y shl 6); {y * 320}
-  *) 
-   EGA_DrawTileFast(x, y, $A400, vmem_offs, draw_segment);
+  *)
+{$ifdef PLATFORM_DOS} 
+   EGA_DrawTileFast2(x, y, $A400, vmem_offs, draw_segment);
+{$endif}
 end;
 
 
@@ -211,8 +267,12 @@ var
    shift_amount: word;
    clipped: word;
    dest_offs_offs1: word;
+{$ifdef PLATFORM_DESKTOP}
+var
+   srcRect, dstRect: TRectangle;
+{$endif}
 begin
-
+{$ifdef PLATFORM_DOS}
    if (x mod 8) = 0 then begin
      EGA_DrawSpriteFast(x div 8, y, sprite);
       Exit;
@@ -350,6 +410,19 @@ begin
                num_cols2 + 1, num_rows + 1);
 
    end;
+   {$else}
+   srcRect.x := 0;
+   srcRect.y := 0;
+   srcRect.width := 16;
+   srcRect.height := 16;
+
+   dstRect.x := x;
+   dstRect.y := y;
+   dstRect.width := 16;
+   dstRect.height := 16;
+
+   ImageDraw(@mainImage, sprite.data, srcRect, dstRect, WHITE);
+   {$endif}
 end;
 
 
@@ -373,7 +446,7 @@ var dummy: byte;  p, o, i: word;
    num_rows, num_cols: word;
 
 begin
-   
+   {$ifdef PLATFORM_DOS}
    src_column0 := 0;
    src_column1 := sprite.column_count - 1;
    dst_column0 := x;
@@ -437,7 +510,8 @@ begin
       src_offs := ofs(sprite.data^) + sprite.height * (src_column0 * sprite.num_channels + p) + start_row;
       EGA_DrawSpriteMaskFast2(src_seg, src_offs, src_skip, draw_segment, dest_offs, dest_rewind, num_cols, num_rows);
    end;
-   
+   {$else}
+   {$endif}
 end;
 
 
@@ -446,7 +520,8 @@ begin
    EGA_SetPlanes(15);
    set_mask($FF);
    set_rotate(0, 0);
-{ $0900 - light blue }
+   { $0900 - light blue }
+   {$ifdef PLATFORM_DOS}
    asm
       { set-reset value }
       mov ax, $0900
@@ -469,6 +544,9 @@ begin
       mov ax, $0001
       out dx, ax
    end;
+   {$else}
+   ImageClearBackground(@mainImage, BLACK);
+   {$endif}
 end;
 
 
@@ -479,6 +557,7 @@ end;
 
 procedure EGA_ShowPage(p: word);
 begin
+   {$ifdef PLATFORM_DOS}
    if p = 0 then begin
       asm
       { start address high }
@@ -508,15 +587,39 @@ begin
       out dx, ax
    end;  
    end;
+   {$endif}
 
 end;
 
+{$ifdef PLATFORM_DESKTOP}
+var StrToPCharBuf: array[0..1023] of byte;
+function StrToPChar(const s: string): PChar;
+var p: PChar;
+begin
+  StrPCopy(@StrToPCharBuf, s);
+
+  StrToPChar := @StrToPCharBuf;
+end;
+{$endif}
+
+
 function EGA_LoadSprite(path: string; var out: EGASprite): boolean;
-var f: file;
+var 
+   f: file;
+{$ifdef PLATFORM_DESKTOP}
+var img: TImage;
+{$endif}
 begin
 
   EGA_LoadSprite := false;
 
+  {$ifdef PLATFORM_DOS}
+  path := 'data/' + path + '.ega';
+  {$else}
+  path := 'dev/' + path + '.png';
+  {$endif}
+  
+  {$ifdef PLATFORM_DOS}
   assign(f, path);
   reset(f, 1);
 
@@ -537,7 +640,17 @@ begin
   System.Close(f);
 
   EGA_LoadSprite := true;
-
+  {$else}
+  out.data := LoadImage(StrToPChar(path));
+  {$endif}
 end;
+
+{$ifdef PLATFORM_DESKTOP}
+function EGA_Raylib_GetBackbuffer: TImage;
+begin
+   EGA_Raylib_GetBackbuffer := mainImage;
+end;
+{$endif}
+
 begin
 end.

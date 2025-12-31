@@ -25,6 +25,7 @@ EGA_Init PROC FAR
     mov ah, 0
     int 10h
     ret
+ENDP
 
 PUBLIC EGA_SetPlanes
 EGA_SetPlanes PROC PASCAL FAR
@@ -36,12 +37,12 @@ EGA_SetPlanes PROC PASCAL FAR
     out dx, ax
 
     ret
+ENDP
 
 
+PUBLIC EGA_DrawTileFast2
 
-PUBLIC EGA_DrawTileFast
-
-EGA_DrawTileFast PROC PASCAL FAR
+EGA_DrawTileFast2 PROC PASCAL FAR
     ARG x: WORD, y: WORD, src_seg: WORD, src_offs: WORD, draw_seg
 
     push ds
@@ -74,6 +75,7 @@ ENDM
 
     pop ds
     ret
+ENDP
 
 draw_sprite_mask_fast_row macro num
     _draw_sprite_mask_fast_row_&num:
@@ -136,6 +138,6 @@ column_loop_end:
     pop ds
 
     ret
-
+ENDP
 
 END

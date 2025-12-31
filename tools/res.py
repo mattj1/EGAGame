@@ -2,6 +2,8 @@ import struct
 
 from PIL import Image, ImageFont, ImageDraw
 
+from tools.process_states import process_states
+
 # EGA color palette (RGB values)
 EGA_PALETTE = [
     (0x00, 0x00, 0x00),  # 0: Black
@@ -23,10 +25,13 @@ EGA_PALETTE = [
 ]
 
 
-def find_closest_ega_color(r, g, b):
+def find_closest_ega_color(r, g, b, a):
     """Find the closest EGA color index for given RGB values."""
     min_dist = float('inf')
     closest = 0
+    if a != 255:
+        return -1
+
     for i, (er, eg, eb) in enumerate(EGA_PALETTE):
         dist = (r - er) ** 2 + (g - eg) ** 2 + (b - eb) ** 2
         if dist < min_dist:
@@ -41,8 +46,7 @@ def pixels_from_image(img):
         row = []
         for x in range(img.size[0]):
             p = img.getpixel((x, y))
-
-            row.append(find_closest_ega_color(p[0], p[1], p[2]))
+            row.append(find_closest_ega_color(p[0], p[1], p[2], p[3]))
         pixels.append(row)
 
     return pixels
@@ -67,9 +71,8 @@ def load_bmp(filename):
     """Load a BMP file using Pillow and return pixel data."""
     img = Image.open(filename)
 
-    # Convert to RGB if needed
-    if img.mode != 'RGB':
-        img = img.convert('RGB')
+    if img.mode != 'RGBA':
+        img = img.convert('RGBA')
 
     # if img.size != (16, 16):
     #     raise ValueError("Image must be 16x16 pixels")
@@ -78,6 +81,7 @@ def load_bmp(filename):
     return pixels_from_image(img)
 
 def convert_subregion(ega_indices, left, top, width, height, transparent_index=-1, write_mask=False, num_color_planes=4):
+    transparent_index = -1
     print(f"convert_subregion: {left},{top},{width},{height}")
     mask_data = bytearray()
 
@@ -177,8 +181,8 @@ def get_font_char_data(pixels):
 
     return final_data
 
-def process_font(input_file, output_file):
-    atlas = Image.new('RGBA', (128, 48), (0, 0, 0, 255))
+def process_font(input_file, output_file_ega, output_file_png):
+    atlas = Image.new('RGBA', (128, 48), (0, 0, 0, 0))
     draw = ImageDraw.Draw(atlas)
     font = ImageFont.truetype(input_file, 6)
     draw.fontmode = "1"
@@ -191,7 +195,7 @@ def process_font(input_file, output_file):
         idx = (i - 32)
         row = idx // (128 / 8)
         col = idx % (128 / 8)
-        draw.text((col * 8 + 1, row * 8 + 1), f"{char}", font=font, fill=(0, 0, 0, 255), stroke_width=0)
+        # draw.text((col * 8 + 1, row * 8 + 1), f"{char}", font=font, fill=(0, 0, 0, 255), stroke_width=0)
         draw.text((col * 8, row * 8), f"{char}", font=font, fill=(255, 255, 255, 255), stroke_width=0)
 
     # atlas.show()
@@ -202,24 +206,31 @@ def process_font(input_file, output_file):
     final_data += get_font_char_data(get_shifted_pixels(pixels, 4, 0, 8))
 
 
-    with open(output_file, 'wb') as f:
+    with open(output_file_ega, 'wb') as f:
         # f.write(struct.pack('<H', width >> 3))
         # f.write(struct.pack('<H', height))
         f.write(final_data)
 
+    atlas.save(output_file_png, "png")
+
 
 def main():
-    process_font("/home/matt/Downloads/my 3x5 tiny mono pixel font.ttf", "/home/matt/dos/tg2/font.ega")
+    process_font("/home/matt/Downloads/my 3x5 tiny mono pixel font.ttf",
+                 "/home/matt/dos/tg2/data/font.ega",
+                 "/home/matt/dos/tg2/dev/font.png")
 
     #return
-    convert_tile("/home/matt/dos/tg2/tile.png", "/home/matt/dos/tg2/tile.ega")
+    convert_tile("dev/tile.png", "data/tile.ega")
     # convert_file("/home/matt/dos/ega/sprite.png", "/home/matt/dos/ega/sprite.ega", write_mask=True)
-    convert_sprite("/home/matt/dos/ega/sprite2.png", "/home/matt/dos/tg2/sprite2.ega", transparent_index=13)
-    convert_sprite("/home/matt/dos/ega/sprite3.png", "/home/matt/dos/tg2/sprite3.ega", transparent_index=13)
-    convert_sprite("/home/matt/dos/tg2/player.png", "/home/matt/dos/tg2/player.ega", transparent_index=1)
-    convert_sprite("/home/matt/dos/tg2/cursor.png", "/home/matt/dos/tg2/cursor.ega", transparent_index=0)
+    # convert_sprite("/home/matt/dos/ega/sprite2.png", "/home/matt/dos/tg2/sprite2.ega", transparent_index=13)
+    # convert_sprite("/home/matt/dos/ega/sprite3.png", "/home/matt/dos/tg2/sprite3.ega", transparent_index=13)
+    convert_sprite("dev/player.png", "data/player.ega", transparent_index=1)
+    convert_sprite("dev/player2.png", "data/player2.ega", transparent_index=1)
+    convert_sprite("dev/player3.png", "data/player3.ega", transparent_index=1)
+    convert_sprite("dev/cursor.png", "data/cursor.ega", transparent_index=0)
 
 
+    process_states()
 
 if __name__ == "__main__":
     main()

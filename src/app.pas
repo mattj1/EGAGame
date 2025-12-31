@@ -1,11 +1,22 @@
 {$X+}
 Program app;
 
-Uses engine, text, ega, crt, level, fixed, gamedata;
+Uses 
+  {$ifdef PLATFORM_DOS}
+  crt, 
+  {$endif}
 
+  {$ifdef PLATFORM_DESKTOP}
+  raylib,
+  {$endif}
+
+  common, engine, text, ega, 
+  
+
+  level, fixed, gamedata, trace, entity, res, player;
 
 Type TPageInfo = Record
-  dirty_tiles: array[0..240] Of byte;
+  dirty_tiles: array[0..239] Of byte;
 End;
 
 
@@ -17,14 +28,11 @@ Var
   f: file;
   pg: word;
   x, y, i: word;
-  player_x: integer;
-  player_y: integer;
   dest_x, dest_y: fix16;
   cursor_x, cursor_y: integer;
   map: TMap;
-  isMoving: boolean;
-  moveLine: TLine;
-  moveCount: word;
+
+  plyr, monster: PEntity;
 
 
 const mapData: array[0 .. 239] of word = (
@@ -61,13 +69,12 @@ Begin
   y0 := top shr 4;
   y1 := bottom shr 4;
 
-
   For y := y0 To y1 Do
     Begin
       For x := x0 To x1 Do
         Begin
-          pages[0].dirty_tiles[x + y * 20] := 1;
-          pages[1].dirty_tiles[x + y * 20] := 1;
+          pages[0].dirty_tiles[x + y * map.width] := 1;
+          pages[1].dirty_tiles[x + y * map.width] := 1;
         End;
     End;
 
@@ -80,11 +87,40 @@ Procedure Update(deltaTime: integer);
 Begin
 End;
 
+{$ifdef PLATFORM_DESKTOP}
+procedure Raylib_DrawTile(x, y, t: word);
+var
+  srcRect, dstRect: TRectangle;
+  img: TImage;
+begin
+  img := EGA_Raylib_GetBackbuffer;
+   srcRect.x := (t and 7) * 16;
+   srcRect.y := (t and $fff8) shl 1;
+
+   srcRect.width := 16;
+   srcRect.height := 16;
+
+   dstRect.x := x;
+   dstRect.y := y;
+   dstRect.width := 16;
+   dstRect.height := 16;
+
+   ImageDraw(@img, assets.raylib_tiles, srcRect, dstRect, WHITE);
+end;
+{$endif}
+
 procedure draw_string(x, y, color: word; s: string);
 var
-  i, l, column, is_shift: word;
+  i, l, ch, column, is_shift: word;
   fs: EGASprite;
+  {$ifdef PLATFORM_DESKTOP}
+  srcRect, dstRect: TRectangle;
+  img: TImage;
+  {$endif}
 begin
+  l := length(s) - 1;
+
+  {$ifdef PLATFORM_DOS}
   is_shift := 0;
   x := x and $fffc;
   if x and 7 <> 0 then is_shift := 1;
@@ -97,15 +133,37 @@ begin
   fs.planes_and := 0;
   fs.planes_or := color;
   
-  l := length(s) - 1;
-
   for i := 0 to l do begin
-    fs.data := @font_data[(1536 * is_shift) + 16 * (ord(s[i + 1]) - 32)];
-EGA_DrawSpriteFast(x shr 3, y, fs);
-
+    ch := ord(s[i + 1]) - 32;
+    if ch <> 0 then begin
+      fs.data := @font_data[(1536 * is_shift) + 16 * (ord(s[i + 1]) - 32)];
+      EGA_DrawSpriteFast(x shr 3, y, fs);
+    end;
     inc(x, 4);
     is_shift := 1 - is_shift;
   end;
+  {$else}
+
+
+   img := EGA_Raylib_GetBackbuffer;
+   srcRect.width := 4;
+   srcRect.height := 8;
+   dstRect.width := 4;
+   dstRect.height := 8;
+
+   for i := 0 to l do begin
+    ch := ord(s[i + 1]) - 32;
+
+    srcRect.x := (ch and 15) * 8;
+    srcRect.y := (ch and $fff0) shr 1;
+
+    dstRect.x := x + i * 4;
+    dstRect.y := y;
+    
+    ImageDraw(@img, assets.raylib_font, srcRect, dstRect, WHITE);
+  end;
+  {$endif}
+
 end;
 
 Procedure Draw;
@@ -115,6 +173,9 @@ var x, y: integer;
   dx, dy, l: fix16;
   mouse_buttons: word;
   pt: LinePoint;
+
+  e: PEntity;
+  bounds: TBounds;
 Begin
 
   player_input := 0;
@@ -126,9 +187,12 @@ Begin
 
   If I_IsKeyDown(kEsc) Then Loop_Cancel;
 
-  mark_dirty_tiles_around_bb(player_x - 16, player_y - 16, player_x + 40, player_y + 32);
-  mark_dirty_tiles_around_bb(cursor_x, cursor_y, cursor_x + 16, cursor_y + 16);
+  mark_dirty_tiles_around_bb(plyr^.origin.x - 16, plyr^.origin.y - 16, plyr^.origin.x + 40, plyr^.origin.y + 32);
+  mark_dirty_tiles_around_bb(monster^.origin.x, monster^.origin.y, 
+    monster^.origin.x + monster^.maxs.x, monster^.origin.y + 16);
 
+  mark_dirty_tiles_around_bb(cursor_x-8, cursor_y-8, cursor_x + 8, cursor_y + 8);
+{
   If (player_input And 1) <> 0 Then
     Begin
       inc(player_y, 1);
@@ -145,45 +209,33 @@ Begin
     Begin
       inc(player_x, 1);
     End;
-
+}
+  {$ifdef PLATFORM_DOS}
   asm
     mov ax, 3
     int $33
     mov mouse_buttons, bx
     mov cursor_x, cx
     mov cursor_y, dx
-end;
+  end;
+  cursor_x := cursor_x div 2;
+  {$else}
+  Neo_Mouse_GetStatus(cursor_x, cursor_y, mouse_buttons);
+  cursor_x := cursor_x div 2;
+  cursor_y := cursor_y div 2; 
+  {$endif}
+
   { TODO: Detect when the mouse actually goes down }
 
-  cursor_x := cursor_x div 2; 
+  
 
   if (mouse_buttons and 1) <> 0 then begin
-    dest_x := cursor_x;
-    dest_y := cursor_y;
-
-    if (player_x <> dest_x) or (player_y <> dest_y) then begin
-    isMoving := True;
-    Line_Init(moveLine, player_x, player_y, dest_x, dest_y);
-    moveCount := 0;
-    end;
+    Player_SetTarget(plyr^, cursor_x, cursor_y);
   end;
 
-  if isMoving then begin
-    inc(moveCount, 244);
+  Player_Update(plyr^);
 
-    while (moveCount >= 256) do begin
-      getPoint(moveLine, pt);
-      Dec(moveCount, 256);
 
-      player_x := pt.x;
-      player_y := pt.y;
-
-      if (pt.x = moveLine.x1) and (pt.y = moveLine.y1) then begin
-        isMoving := false;
-        Exit;
-      end;
-    end;
-  end;
 
     {mark_dirty_tiles_around_bb(player_x - 16, player_y - 16, player_x + 40, player_y + 32);}
   engine.pressedKeys := [];
@@ -201,37 +253,55 @@ end;
 }
   {pg := 0;
   }
+  {$ifdef PLATFORM_DESKTOP}
+  EGA_ClearScreen;
+{$endif}
   EGA_SetDrawPage(pg);
   set_rotate(0, 0);
   set_mask($ff);
 
   EGA_BeginDrawTiles;
-  For y := 0 To 11 Do
+  For y := 0 To (map.height - 1) Do
     Begin
-      For x := 0 To 19 Do
+      For x := 0 To (map.width - 1) Do
         Begin
-          If (pages[pg].dirty_tiles[x + y * 20] = 1) Then
+
+          {$ifdef PLATFORM_DOS}
+          If (pages[pg].dirty_tiles[x + y * map.width] = 1) Then
             Begin
-               draw_tile_fast(x, y, map.tiles^[y * 20 + x].t * 128); 
+               EGA_DrawTileFast(x, y, map.tiles^[x + y * map.width].t * 128); 
             End;
+          {$else}
+          Raylib_DrawTile(x * 16, y * 16, map.tiles^[x + y * map.width].t);
+          {$endif}
         End;
     End;
   EGA_EndDrawTiles;
 
+
+  Dec(plyr^.stateTime);
+  if plyr^.stateTime = 0 then begin
+    Entity_SetState(plyr^, plyr^.state^.nextState);
+  end;
+
    
   {player_y := player_y div 2;}
-  EGA_DrawSpriteSlow(player_x, player_y, res.sprite_player);
-  EGA_DrawSpriteSlow(cursor_x, cursor_y, res.sprite_cursor);
+  EGA_DrawSpriteSlow(plyr^.origin.x, plyr^.origin.y, assets.sprites[plyr^.state^.spriteState]);
+  EGA_DrawSpriteSlow(monster^.origin.x, monster^.origin.y, assets.sprites[SPRITE_STATE_PLAYER_STAND0]);
+  EGA_DrawSpriteSlow(cursor_x - 8, cursor_y - 8, assets.sprites[SPRITE_STATE_CURSOR0]);
   
-  {
-  draw_string(96, 20, 15, 'Healing Potion');
-  }
-
+{  
+  draw_string(16, 128, 15, 'Debug messages here');
+  draw_string(16, 128 + 8, 15, ' Debug messages here');
+  draw_string(16, 128 + 16, 15, '  Debug messages here');
+}
   {  draw_string(player_x - 15, player_y - 15, 15, Concat('X: ', itoa(player_x), '  Y:', WordToString(player_y)));}
   { draw_string(player_x - 15, player_y - 15, 7, 'Healing Potion');
-  } EGA_ShowPage(pg);
-  WaitVerticalRetrace;
+  }
+  EGA_ShowPage(pg);
+  EGA_WaitVerticalRetrace;
   fillchar(pages[pg].dirty_tiles, 240, 0);
+
   pg := 1 - pg;
 End;
 
@@ -263,6 +333,7 @@ Begin
   ExitProc := @Shutdown;
   Neo_Init;
 
+  {$ifdef PLATFORM_DOS}
   ClrScr;
   TextColor(7);
   TextBackground(4);
@@ -270,40 +341,67 @@ Begin
   TextBackground(0);
 
   writeln('Loading...');
+  writeln('MemAvail: ', MemAvail, ' MaxAvail: ', MaxAvail);
+  {$endif}
 
-  assign(f, 'tile.ega');
+  {$ifdef PLATFORM_DESKTOP}
+  Console_SetWriteStdOut(true);
+  {$endif}
+
+  assign(f, 'data/tile.ega');
   reset(f, 8192);
   blockread(f, tile, 1);
   System.Close(f);
 
-  assign(f, 'font.ega');
+  {$ifdef PLATFORM_DOS}
+  assign(f, 'data/font.ega');
   reset(f, 3072);
   blockread(f, font_data, 1);
   System.Close(f);
-
+  {$else}
+  assets.raylib_font := LoadImage('dev/font.png');
+  assets.raylib_tiles := LoadImage('dev/tile.png');
+  {$endif}
+{
   GetMem(res.sqrt, 65528);
   assign(f, 'data\sqrt.bin');
   reset(f, 65528);
   blockread(f, res.sqrt^, 1);
   System.Close(f);
+}
+  EGA_LoadSprite('player', assets.sprites[SPRITE_STATE_PLAYER_STAND0]);
+  EGA_LoadSprite('player2', assets.sprites[SPRITE_STATE_PLAYER_MOVE0]);
+  EGA_LoadSprite('player3', assets.sprites[SPRITE_STATE_PLAYER_MOVE1]);
+  EGA_LoadSprite('cursor', assets.sprites[SPRITE_STATE_CURSOR0]);
 
-  EGA_LoadSprite('player.ega', res.sprite_player);
-  EGA_LoadSprite('cursor.ega', res.sprite_cursor);
-  
-
-  Timer_Init;
+  Neo_Timer_Init;
   Neo_Mouse_Init;
 
-  Map_Alloc(20, 18, map);
-  For i := 0 to 239 do map.tiles^[i].t := mapData[i];
+  Entity_Init;
+  
+  Map_Alloc(20, 12, map);
+
+  For i := 0 to 239 do begin 
+    map.tiles^[i].t := mapData[i];
+    map.tiles^[i].flags := 0;
+    if mapData[i] = 2 then begin
+      map.tiles^[i].flags := TILEFLAG_SOLID;
+    end;
+  end;
 
   writeln('Fixed point: Max coord val in pixels: ', f2i(32767));
+  {$ifdef PLATFORM_DOS}
+  writeln('MemAvail: ', MemAvail, ' MaxAvail: ', MaxAvail);
+  
+
+  if False then begin
+    readln;
+    Exit;
+  end;
+  {$endif}
 
   
-  readln;
-  {Exit;
-  }
-  
+
 {
   do_keyboard_test;
   Exit;
@@ -322,8 +420,17 @@ Begin
   fillchar(pages[0].dirty_tiles, 240, 1);
   fillchar(pages[1].dirty_tiles, 240, 1);
 
-  player_x := 10;
-  player_y := 10;
+  
+
+  plyr := Entity_Alloc(ET_PLAYER);
+  plyr^.origin.x := 20;
+  plyr^.origin.y := 20;
+  Entity_SetState(plyr^, STATE_PLAYER_STAND0);
+
+  monster := Entity_Alloc(ET_MONSTER);
+  monster^.origin.x := 280;
+  monster^.origin.y := 100;
+  Entity_SetState(monster^, STATE_PLAYER_STAND0);
 
   EGA_SetDrawPage(0);
   EGA_ShowPage(0);
@@ -332,6 +439,7 @@ set_rotate(0, 0);
 
   EGA_ClearScreen;
 
+  {$ifdef PLATFORM_DOS}
 
   for i := 0 to 3 do begin
     EGA_SetPlanes(1 shl i);
@@ -340,51 +448,18 @@ set_rotate(0, 0);
       MEM[$A400:j] := tile[i * 32 + j];
     end;
   end;
+  {$endif}
 
 
   Keybrd_Init;
 
+{$ifdef PLATFORM_DOS}
   Loop_SetUpdateProc(Update);
   Loop_SetDrawProc(Draw);
+{$else}
+  Loop_SetUpdateProc(@Update);
+  Loop_SetDrawProc(@Draw);
+{$endif}
   Loop_Run;
-  Exit;
-  
-  EGA_SetDrawPage(0);
-  for i := 1 to 60 do begin
-    {EGA_ClearScreen;}
-    EGA_SetDrawPage(pg);
-    EGA_SetPlanes(15);
-    
-    EGA_BeginDrawTiles;
-  
-      For y := 0 To 11 Do
-      Begin
-
-        For x := 0 To 19 Do
-          Begin
-            draw_tile_fast(x, y, 128 * 1);
-          End;
-          
-      End;
-      
-      EGA_EndDrawTiles;
-
-      set_mask($ff);
-      {for y := 0 to 9 do begin
-        EGA_DrawSpriteFast(-1 + y * 2, i, @sprite[0]);
-      end;
-      for y := 0 to 9 do begin
-        EGA_DrawSpriteSlow(-8 + y * 24, 50 + i, @sprite[0]);
-      end;
-      }
-      EGA_ShowPage(pg);
-      WaitVerticalRetrace;
-      pg := 1 - pg;
-  end;
-
-  readln;
-
-  { Shutdown gets called here }
-  Exit;
 
 End.

@@ -4,3 +4,6 @@
 *.OBJ
 *.LST
 *.MAP
+*.ppu
+*.res
+*.o

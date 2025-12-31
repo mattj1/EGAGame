@@ -1,0 +1,4 @@
+type,width,height,origin_x,origin_y,collision,damage_func,frame_func,hit_func,hitby_func
+NONE,0,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,
+PLAYER,12,14,1,1,1,,Player_Update,,,,,,,,,,,,,,,,,,,,,
+MONSTER,12,14,1,1,1,,,,,,,,,,,,,,,,,,,,,,,
