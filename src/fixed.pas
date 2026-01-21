@@ -1,8 +1,9 @@
 unit fixed;
+
 interface
 
-type 
-   fix16 = integer;
+type
+  fix16 = integer;
 
   TVec2 = record
     x, y: fix16;
@@ -17,16 +18,17 @@ type
     x, y: fix16;
   end;
 
+  PLine = ^TLine;
   TLine = record
-    dx, dy, x, y, sx, sy, err, x0, y0, x1, y1: fix16;
-    didReturnFirst: boolean;
+
   end;
+
 procedure Line_Init(var line: TLine; x0, y0, x1, y1: fix16);
 procedure getPoint(var line: TLine; var pt: LinePoint);
 
 
 function i2f(x: integer): fix16;
-function f2i(x:fix16): integer;
+function f2i(x: fix16): integer;
 function fix16Div(val1, val2: fix16): fix16;
 function fix16Mul(val1, val2: fix16): fix16;
 function fix16Sqrt(val: fix16): fix16;
@@ -34,14 +36,24 @@ function fix16Sqrt(val: fix16): fix16;
 procedure BoundsFromSize(origin, mins, maxs: TVec2; var out: TBounds);
 procedure BoundsCenter(bounds: TBounds; var out: TVec2);
 function BoundsIntersectsBounds(b0, b1: TBounds): boolean;
-procedure UnionBounds(var result: TBounds; a, b: TBounds);
+procedure UnionBounds(var Result: TBounds; a, b: TBounds);
 procedure OffsetBounds(const bounds: TBounds; offset: TVec2; var out: TBounds);
 
 function BoundsContainsXY(a: TBounds; x, y: fix16): boolean;
 
+procedure Line_InitPool;
+function Line_Alloc: word;
+procedure Line_Free(var index: word);
+function Line_Get(index: word): PLine;
+
 implementation
 
 uses gamedata;
+
+const MAX_LINES = 64;
+var
+  moveLines: array[0..MAX_LINES] of TLine;
+  lineUsed: array[0..MAX_LINES] of boolean;
 
 {$ifdef PLATFORM_DOS}
 function sal(x: fix16; n: byte): fix16; assembler;
@@ -51,6 +63,7 @@ asm
    sal ax, cl
 end;
 {$else}
+
 function sal(x: fix16; n: byte): fix16;
 begin
   sal := x * (1 shl n);
@@ -65,6 +78,7 @@ asm
    sar ax, cl
 end;
 {$else}
+
 function sar(x: fix16; n: byte): fix16;
 begin
   sar := x div (1 shl n);
@@ -79,6 +93,7 @@ asm
    sal ax, cl
 end;
 {$else}
+
 function i2f(x: fix16): fix16;
 begin
   i2f := x * 16;
@@ -93,7 +108,8 @@ asm
    sar ax, cl
 end;
 {$else}
-function f2i(x:fix16): integer;
+
+function f2i(x: fix16): integer;
 begin
   f2i := x div 16;
 end;
@@ -101,12 +117,12 @@ end;
 
 function fix16Div(val1, val2: fix16): fix16;
 begin
-   fix16Div := sal(val1, 2) div sar(val2, 2);
+  fix16Div := sal(val1, 2) div sar(val2, 2);
 end;
 
 function fix16Mul(val1, val2: fix16): fix16;
 begin
-   fix16Mul := (sar(val1, 2) * sar(val2, 2));
+  fix16Mul := (sar(val1, 2) * sar(val2, 2));
 end;
 
 { TODO: Mul by frac }
@@ -115,7 +131,7 @@ end;
 
 function fix16Sqrt(val: fix16): fix16;
 begin
-   fix16Sqrt := assets.sqrt^[val];
+  fix16Sqrt := assets.sqrt^[val];
 end;
 
 
@@ -130,6 +146,7 @@ begin
   line.x1 := x1;
   line.y1 := y1;
   line.sx := -1;
+  line.done := False;
   if x0 <= x1 then line.sx := 1;
   line.sy := -1;
   if y0 <= y1 then line.sy := 1;
@@ -139,6 +156,7 @@ end;
 
 procedure getPoint(var line: TLine; var pt: LinePoint);
 begin
+
   if not line.didReturnFirst then
   begin
     pt.x := line.x0;
@@ -146,6 +164,14 @@ begin
     line.didReturnFirst := True;
     Exit;
   end;
+
+  if line.done then
+  begin
+    pt.x := line.x1;
+    pt.y := line.y1;
+    Exit;
+  end;
+
   if line.dx > line.dy then
   begin
     line.err := line.err - line.dy;
@@ -166,8 +192,14 @@ begin
     end;
     line.y := line.y + line.sy;
   end;
+
   pt.x := line.x;
   pt.y := line.y;
+
+  if (pt.x = line.x1) and (pt.y = line.y1) then
+  begin
+    line.done := True;
+  end;
 end;
 
 procedure BoundsFromSize(origin, mins, maxs: TVec2; var out: TBounds);
@@ -186,10 +218,8 @@ end;
 
 function BoundsIntersectsBounds(b0, b1: TBounds): boolean;
 begin
-  if (b0.max.x <= b1.min.x) or
-     (b0.max.y <= b1.min.y) or
-     (b0.min.x >= b1.max.x) or
-     (b0.min.y >= b1.max.y) then
+  if (b0.max.x <= b1.min.x) or (b0.max.y <= b1.min.y) or
+    (b0.min.x >= b1.max.x) or (b0.min.y >= b1.max.y) then
   begin
     BoundsIntersectsBounds := False;
   end
@@ -199,27 +229,27 @@ begin
   end;
 end;
 
-procedure UnionBounds(var result: TBounds; a, b: TBounds);
+procedure UnionBounds(var Result: TBounds; a, b: TBounds);
 begin
   if a.min.x < b.min.x then
-    result.min.x := a.min.x
+    Result.min.x := a.min.x
   else
-    result.min.x := b.min.x;
-    
+    Result.min.x := b.min.x;
+
   if a.min.y < b.min.y then
-    result.min.y := a.min.y
+    Result.min.y := a.min.y
   else
-    result.min.y := b.min.y;
-    
+    Result.min.y := b.min.y;
+
   if a.max.x > b.max.x then
-    result.max.x := a.max.x
+    Result.max.x := a.max.x
   else
-    result.max.x := b.max.x;
-    
+    Result.max.x := b.max.x;
+
   if a.max.y > b.max.y then
-    result.max.y := a.max.y
+    Result.max.y := a.max.y
   else
-    result.max.y := b.max.y;
+    Result.max.y := b.max.y;
 end;
 
 procedure OffsetBounds(const bounds: TBounds; offset: TVec2; var out: TBounds);
@@ -232,11 +262,51 @@ end;
 
 function BoundsContainsXY(a: TBounds; x, y: fix16): boolean;
 begin
-  BoundsContainsXY := false;
+  BoundsContainsXY := False;
 
   if (x > a.max.x) or (x < a.min.x) or (y > a.max.y) or (y < a.min.y) then Exit;
 
-  BoundsCOntainsXY := true;
+  BoundsContainsXY := True;
+end;
+
+procedure Line_InitPool;
+var
+  i: word;
+begin
+  for i := 0 to MAX_LINES do
+  begin
+    lineUsed[i] := False;
+    FillChar(moveLines[i], SizeOf(TLine), 0);
+  end;
+end;
+function Line_Alloc: word;
+var
+  i: word;
+begin
+  Line_Alloc := 0;  { 0 means failure }
+  for i := 1 to MAX_LINES do  { Skip 0 as it's reserved }
+  begin
+    if not lineUsed[i] then
+    begin
+      lineUsed[i] := True;
+      Line_Alloc := i;
+      Exit;
+    end;
+  end;
+end;
+procedure Line_Free(var index: word);
+begin
+  if (index > 0) and (index <= MAX_LINES) then
+    lineUsed[index] := False;
+
+  index := 0;
+end;
+function Line_Get(index: word): PLine;
+begin
+  if (index > 0) and (index <= MAX_LINES) then
+    Line_Get := @moveLines[index]
+  else
+    Line_Get := nil;
 end;
 
 begin

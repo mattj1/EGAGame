@@ -1,136 +1,146 @@
+unit player;
 
-Unit player;
 
+interface
 
-Interface
+uses common, engine, fixed, entity, res;
 
-Uses common, engine, fixed, entity, res;
+procedure Player_SetTarget(var self: TEntity; x, y: word);
+procedure Player_Update(var self: TEntity);
 
-Procedure Player_SetTarget(Var self: TEntity; x, y: word);
-Procedure Player_Update(Var self: TEntity);
+procedure Player_Register(var info: TEntityInfo);
 
-Implementation
+implementation
 
-Var moveLine: TLine;
-
-Procedure UpdateMoveLine(Var self: TEntity);
-
-Var dest: TVec2;
+procedure UpdateMoveLine(var self: TEntity);
+var
+  dest: TVec2;
   e: PEntity;
-Begin
+begin
 
- { Get target location based on action }
+  { Get target location based on action }
 
-  Case self.action Of 
+  case self.action of
     1:
-       Begin
-         dest.x := self.targetPos.x;
-         dest.y := self.targetPos.y;
-       End;
+    begin
+      dest.x := self.targetPos.x;
+      dest.y := self.targetPos.y;
+    end;
     2:
-       Begin
-         e := EntityForID(self.targetID);
-         If Not assigned(e) Then
-           Begin
-             writeln('no entity for id ', self.targetID, ' ', self.targetID shr 6);
-             self.action := 0;
-           End
-         Else
-           Begin
-             dest := e^.origin;
-           End;
-       End;
-  End;
+    begin
+      e := EntityForID(self.targetID);
+      if not assigned(e) then
+      begin
+        writeln('no entity for id ', self.targetID, ' ', self.targetID shr 6);
+        self.action := 0;
+      end
+      else
+      begin
+        dest := e^.origin;
+      end;
+    end;
+  end;
 
-  If self.action = 0 Then Exit;
- { if dest.x = self.x and dest.y = self.y then Exit; }
+  if self.action = 0 then Exit;
+  { if dest.x = self.x and dest.y = self.y then Exit; }
 
 
 
- { If target entity doesn't exist, then go back to action=0}
+  { If target entity doesn't exist, then go back to action=0}
 
   self.isMoving := True;
   self.moveCount := 0;
-  Line_Init(moveLine, self.origin.x, self.origin.y, dest.x, dest.y);
-  Entity_SetState(self, STATE_PLAYER_MOVE0);
+  Line_Free(self.moveLine);
+  self.moveLine := Line_Alloc;
+  if self.moveLine <> 0 then
+  begin
+    Line_Init(Line_Get(self.moveLine)^, self.origin.x, self.origin.y, dest.x, dest.y);
+    Entity_SetState(self, STATE_PLAYER_MOVE0);
+  end;
+end;
 
 
-End;
+procedure OnMoveComplete(var self: TEntity; move: TMoveInfo);
+begin
+  Entity_SetState(self, STATE_PLAYER_STAND0);
+  if (self.targetID <> 0) and (move.hitEntity = self.targetID) then
+  begin
+    Console_Print('Player moved into target');
+  end;
+end;
 
-Procedure Player_Update(Var self: TEntity);
-Begin
-  With self 
-    Do
-    Begin
-      If self.isMoving Then
-        Begin
-          inc(self.moveCount, 256);
+procedure Player_Update(var self: TEntity);
+begin
+  Entity_StandardMove(self, 256, OnMoveComplete);
+end;
 
-          While (self.moveCount >= 256) 
-            Do
-            Begin
-              Entity_MoveLine(self, moveLine);
-              Dec(self.moveCount, 256);
-
-              If (self.origin.x = moveLine.x1) And (self.origin.y = moveLine.y1) Then
-                Begin
-                  self.isMoving := false;
-                  Entity_SetState(self, STATE_PLAYER_STAND0);
-                  break;
-                End;
-            End;
-        End;
-    End;
-End;
-
-Procedure Player_SetTarget(Var self: TEntity; x, y: word);
-
-Var i: word;
+procedure Player_SetTarget(var self: TEntity; x, y: word);
+var
+  i: word;
   e: PEntity;
   bounds: TBounds;
   targetEntity: PEntity;
-Begin
+begin
 
-  targetEntity := Nil;
+  targetEntity := nil;
 
-{	dest_x := cursor_x;
+{  dest_x := cursor_x;
     dest_y := cursor_y;}
 
   { Find out if something is targetable }
 
-  For i := 0 To MAX_ENT-1 
-    Do
-    Begin
-      e := EntityForIndex(i);
-      If Assigned(e^.state) And (e <> @self) Then
-        Begin
-          BoundsFromSize(e^.origin, e^.mins, e^.maxs, bounds);
+  for i := 0 to MAX_ENT - 1 do
+  begin
+    e := EntityForIndex(i);
+    if Assigned(e^.state) and (e <> @self) then
+    begin
+      BoundsFromSize(e^.origin, e^.mins, e^.maxs, bounds);
 
-          If BoundsContainsXY(bounds, x, y) Then
-            Begin
-              targetEntity := e;
-              break;
-            End;
-        End;
-    End;
+      if BoundsContainsXY(bounds, x, y) then
+      begin
+        targetEntity := e;
+        break;
+      end;
+    end;
+  end;
 
-  If Assigned(targetEntity) Then
-    Begin
-      Console_Print('target entity');
-      self.targetID := targetEntity^.id;
-      self.action := 2;
-    End
-  Else
-    Begin
-      Console_Print('move');
-      self.targetID := 0;
-      self.action := 1;
-      self.targetPos.x := x;
-      self.targetPos.y := y;
-    End;
+  if Assigned(targetEntity) then
+  begin
+    Console_Print('target entity');
+    self.targetID := targetEntity^.id;
+    self.action := 2;
+  end
+  else
+  begin
+    Console_Print('move');
+    self.targetID := 0;
+    self.action := 1;
+    self.targetPos.x := x;
+    self.targetPos.y := y;
+  end;
 
   UpdateMoveLine(self);
 
-End;
-Begin
-End.
+end;
+
+procedure Player_StateChange(var self: TEntity);
+begin
+end;
+
+procedure Player_Register(var info: TEntityInfo);
+begin
+  { info.maxs := (x: 10; y: 10); }
+  info.mins.x := 1;
+  info.mins.y := 1;
+  info.maxs.x := 1 + 12;
+  info.maxs.y := 1 + 14;
+
+  info.frameFunc := Player_Update;
+  info.stateChangeFunc := Player_StateChange;
+  Console_Print('Player_Register');
+end;
+
+(*codegen*)
+(*codegen-end*)
+begin
+end.

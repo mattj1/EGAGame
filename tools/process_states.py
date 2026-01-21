@@ -5,7 +5,7 @@ import sys
 import os
 
 from processlib import get_lines, get_lines_csv
-from tools.process_entity_info import process_entity_info
+from process_entity_info import process_entity_info
 
 
 @dataclass
@@ -82,21 +82,24 @@ const
 
     num_entity_infos = len(entity_infos)
     write_out(f"""
-    ent_info: array[0..{num_entity_infos-1}] of TEntityInfo = (\n""")
+    var
+        ent_info: array[0..{num_entity_infos - 1}] of TEntityInfo;\n""")
 
-    for i in entity_infos:
-        write_out(f'\t\t(mins: (x:{i.mins[0]}; y:{i.mins[1]}); ')
-        write_out(f'maxs: (x:{i.maxs[0]}; y:{i.maxs[1]}); ')
-        write_out(f'collision: {i.collision} ')
-        write_out(')')
-
-        if i != entity_infos[-1]:
-            write_out(',')
-        write_out('\n')
-
-    write_out("\t);\n")
     write_out("implementation\n")
-
     write_out("begin\n")
+
+    # for i in entity_infos:
+    #     write_out(f'\t\t(mins: (x:{i.mins[0]}; y:{i.mins[1]});\n')
+    #     write_out(f'\t\t\tmaxs: (x:{i.maxs[0]}; y:{i.maxs[1]});\n')
+    #     write_out(f'\t\t\tcollision: {i.collision};\n')
+    #     write_out(f'\t\t\tentityFrameFunc: {i.frame_func};\n')
+    #     write_out(f'\t\t\tstateChangeFunc: {i.state_change_func}\n')
+    #     write_out('\t\t)')
+    #
+    #     if i != entity_infos[-1]:
+    #         write_out(',')
+    #     write_out('\n')
+    #
+    # write_out("\t);\n")
     write_out("end.\n")
     myfile.close()

@@ -14,7 +14,8 @@ const
 	STATE_PLAYER_ATTACK1 = 7;
 	STATE_PLAYER_ATTACK2 = 8;
 	STATE_CURSOR0 = 9;
-	STATE_MAX = 10;
+	STATE_MONSTER_STAND0 = 10;
+	STATE_MAX = 11;
 
 	SPRITE_STATE_NONE = 0;
 	SPRITE_STATE_PLAYER_STAND0 = 1;
@@ -24,7 +25,8 @@ const
 	SPRITE_STATE_PLAYER_ATTACK1 = 5;
 	SPRITE_STATE_PLAYER_ATTACK2 = 6;
 	SPRITE_STATE_CURSOR0 = 7;
-	SPRITE_STATE_MAX = 8;
+	SPRITE_STATE_MONSTER_STAND0 = 8;
+	SPRITE_STATE_MAX = 9;
 
 	ET_NONE = 0;
 	ET_PLAYER = 1;
@@ -37,17 +39,15 @@ const
 		(state: STATE_PLAYER_MOVE1; nextState: STATE_PLAYER_MOVE2; numFrames: 20; spriteState: SPRITE_STATE_PLAYER_STAND0),
 		(state: STATE_PLAYER_MOVE2; nextState: STATE_PLAYER_MOVE3; numFrames: 20; spriteState: SPRITE_STATE_PLAYER_MOVE1),
 		(state: STATE_PLAYER_MOVE3; nextState: STATE_PLAYER_MOVE0; numFrames: 20; spriteState: SPRITE_STATE_PLAYER_STAND0),
-		(state: STATE_PLAYER_ATTACK0; nextState: STATE_PLAYER_ATTACK1; numFrames: 20; spriteState: SPRITE_STATE_PLAYER_ATTACK0),
-		(state: STATE_PLAYER_ATTACK1; nextState: STATE_PLAYER_ATTACK2; numFrames: 20; spriteState: SPRITE_STATE_PLAYER_ATTACK1),
-		(state: STATE_PLAYER_ATTACK2; nextState: STATE_PLAYER_ATTACK0; numFrames: 60; spriteState: SPRITE_STATE_PLAYER_ATTACK2),
-		(state: STATE_CURSOR0; nextState: STATE_CURSOR0; numFrames: 60; spriteState: SPRITE_STATE_CURSOR0)
+		(state: STATE_PLAYER_ATTACK0; nextState: STATE_PLAYER_ATTACK1; numFrames: 5; spriteState: SPRITE_STATE_PLAYER_ATTACK0),
+		(state: STATE_PLAYER_ATTACK1; nextState: STATE_PLAYER_ATTACK2; numFrames: 5; spriteState: SPRITE_STATE_PLAYER_ATTACK1),
+		(state: STATE_PLAYER_ATTACK2; nextState: STATE_PLAYER_ATTACK0; numFrames: 10; spriteState: SPRITE_STATE_PLAYER_ATTACK2),
+		(state: STATE_CURSOR0; nextState: STATE_CURSOR0; numFrames: 60; spriteState: SPRITE_STATE_CURSOR0),
+		(state: STATE_MONSTER_STAND0; nextState: STATE_MONSTER_STAND0; numFrames: 60; spriteState: SPRITE_STATE_MONSTER_STAND0)
 	);
 
-    ent_info: array[0..2] of TEntityInfo = (
-		(mins: (x:0; y:0); maxs: (x:0; y:0); collision: 0 ),
-		(mins: (x:-1; y:-1); maxs: (x:11; y:13); collision: 1 ),
-		(mins: (x:-1; y:-1); maxs: (x:11; y:13); collision: 1 )
-	);
+    var
+        ent_info: array[0..2] of TEntityInfo;
 implementation
 begin
 end.

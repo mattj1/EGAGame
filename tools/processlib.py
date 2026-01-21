@@ -21,6 +21,20 @@ def get_lines_csv(path):
     return lines
 
 
+def get_lines_csv_as_dict(path):
+    lines = []
+    with open(path) as f:
+        reader = csv.reader(f)
+        header = next(reader)
+        for row in reader:
+            elements = [x.strip() for x in row]
+            if not elements[0]:
+                continue
+
+            lines.append({header[i]: x for i, x in enumerate(elements)})
+
+    return lines
+
 def get_lines(url):
     response = requests.get(url)
     assert response.status_code == 200, 'Wrong status code'

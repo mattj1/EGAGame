@@ -2,7 +2,7 @@ import struct
 
 from PIL import Image, ImageFont, ImageDraw
 
-from tools.process_states import process_states
+from process_states import process_states
 
 # EGA color palette (RGB values)
 EGA_PALETTE = [
@@ -62,7 +62,6 @@ def get_shifted_pixels(pixels, shift, transparent_index, crop_end=0):
         if crop_end != 0:
             shifted_row = shifted_row[:-crop_end]
 
-        print(len(row), len(shifted_row))
         new_pixels.append(shifted_row)
 
     return new_pixels
@@ -81,8 +80,7 @@ def load_bmp(filename):
     return pixels_from_image(img)
 
 def convert_subregion(ega_indices, left, top, width, height, transparent_index=-1, write_mask=False, num_color_planes=4):
-    transparent_index = -1
-    print(f"convert_subregion: {left},{top},{width},{height}")
+    # print(f"convert_subregion: {left},{top},{width},{height}")
     mask_data = bytearray()
 
     planes = [bytearray(), bytearray(), bytearray(), bytearray()]
@@ -157,8 +155,8 @@ def convert_sprite(input_file, output_file, transparent_index=-1):
     print(f"Size: {width} x {height}")
     # Convert 8x8 sub-regions to EGA data, so the final data is several 40-byte chunks
 
-    if transparent_index == -1:
-        transparent_index = pixels[0][0]
+    # if transparent_index == -1:
+    #     transparent_index = pixels[0][0]
 
     print(f"Transparent index: {transparent_index}")
     final_data = bytearray()
@@ -176,7 +174,7 @@ def get_font_char_data(pixels):
 
     for y in range(0, len(pixels), 8):
         for x in range(0, len(pixels[0]), 8):
-            data = convert_subregion(pixels, x, y, 8, 8, transparent_index=0, write_mask=True, num_color_planes=1)
+            data = convert_subregion(pixels, x, y, 8, 8, transparent_index=-1, write_mask=True, num_color_planes=1)
             final_data += data
 
     return final_data
@@ -191,7 +189,6 @@ def process_font(input_file, output_file_ega, output_file_png):
         bbox = font.getbbox(char)
         # width = bbox[2] - bbox[0]
         # height = bbox[3] - bbox[1]
-        print(char, bbox)
         idx = (i - 32)
         row = idx // (128 / 8)
         col = idx % (128 / 8)
@@ -203,7 +200,7 @@ def process_font(input_file, output_file_ega, output_file_png):
 
     final_data = bytearray()
     final_data += get_font_char_data(pixels)
-    final_data += get_font_char_data(get_shifted_pixels(pixels, 4, 0, 8))
+    final_data += get_font_char_data(get_shifted_pixels(pixels, 4, -1, 8))
 
 
     with open(output_file_ega, 'wb') as f:
@@ -224,11 +221,11 @@ def main():
     # convert_file("/home/matt/dos/ega/sprite.png", "/home/matt/dos/ega/sprite.ega", write_mask=True)
     # convert_sprite("/home/matt/dos/ega/sprite2.png", "/home/matt/dos/tg2/sprite2.ega", transparent_index=13)
     # convert_sprite("/home/matt/dos/ega/sprite3.png", "/home/matt/dos/tg2/sprite3.ega", transparent_index=13)
-    convert_sprite("dev/player.png", "data/player.ega", transparent_index=1)
-    convert_sprite("dev/player2.png", "data/player2.ega", transparent_index=1)
-    convert_sprite("dev/player3.png", "data/player3.ega", transparent_index=1)
-    convert_sprite("dev/cursor.png", "data/cursor.ega", transparent_index=0)
-
+    convert_sprite("dev/player.png", "data/player.ega")
+    for i in range(2, 7):
+        convert_sprite(f"dev/player{i}.png", f"data/player{i}.ega")
+    convert_sprite("dev/monster.png", "data/monster.ega")
+    convert_sprite("dev/cursor.png", "data/cursor.ega")
 
     process_states()
 

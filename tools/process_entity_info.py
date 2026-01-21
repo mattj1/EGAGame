@@ -6,6 +6,7 @@ import sys
 import os
 
 from processlib import get_lines_csv
+from processlib import get_lines_csv_as_dict
 
 
 @dataclass
@@ -20,6 +21,7 @@ class EntityInfo:
     frame_func: Optional[str]
     hit_func: Optional[str]
     hitby_func: Optional[str]
+    state_change_func: Optional[str]
 
 
 def process_entity_info() -> list[EntityInfo]:
@@ -30,7 +32,7 @@ def process_entity_info() -> list[EntityInfo]:
 
     # sys.stdout.write(s)
 
-    lines = get_lines_csv('dev/entity_info.csv')
+    lines = get_lines_csv_as_dict('dev/entity_info.csv')
 
     state_idx = 0
     lines2 = []
@@ -45,10 +47,10 @@ def process_entity_info() -> list[EntityInfo]:
 
     classID = 0
     for line in lines:
-        width = int(line[1])
-        height = int(line[2])
-        offset_x = int(line[3])
-        offset_y = int(line[4])
+        width = int(line['width'])
+        height = int(line['height'])
+        offset_x = int(line['origin_x'])
+        offset_y = int(line['origin_y'])
 
         mins = (-offset_x, -offset_y)
         maxs = (width - offset_x, height - offset_y)
@@ -56,14 +58,15 @@ def process_entity_info() -> list[EntityInfo]:
 
         infos.append(EntityInfo(
             classID=classID,
-            entityTypeName=f"ET_{line[0]}",
+            entityTypeName=f"ET_{line['type']}",
             mins=mins,
             maxs=maxs,
-            collision=int(line[5]),
-            damage_func=line[6] or "nil",
-            frame_func=line[7] or "nil",
-            hit_func=line[8] or "nil",
-            hitby_func=line[9] or "nil",
+            collision=int(line['collision']),
+            damage_func=line['damage_func'] or "nil",
+            frame_func=line['frame_func'] or "nil",
+            hit_func=line['hit_func'] or "nil",
+            hitby_func=line['hitby_func'] or "nil",
+            state_change_func=line['state_change_func'] or "nil",
         ))
 
         classID += 1

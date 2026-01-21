@@ -1,4 +1,4 @@
-type,width,height,origin_x,origin_y,collision,damage_func,frame_func,hit_func,hitby_func
-NONE,0,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,
-PLAYER,12,14,1,1,1,,Player_Update,,,,,,,,,,,,,,,,,,,,,
-MONSTER,12,14,1,1,1,,,,,,,,,,,,,,,,,,,,,,,
+type,width,height,origin_x,origin_y,collision,unit,source_path,codegen_tag,frame_func,state_change_func,damage_func,hit_func,hitby_func,,,,,,,,,,,,,,,,,,,
+NONE,0,0,0,0,0,,,,,,,,,,,,,,,,,,,,,,,,,,,
+PLAYER,12,14,1,1,1,player,src/player.pas,,,,,,,,,,,,,,,,,,,,,,,,,
+MONSTER,12,14,1,1,1,,,,,,,,,,,,,,,,,,,,,,,,,,,

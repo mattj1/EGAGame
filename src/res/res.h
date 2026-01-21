@@ -1,0 +1,37 @@
+// Define enums for entity states
+typedef enum {
+    STATE_NONE = 0,
+    STATE_PLAYER_STAND0,
+    STATE_PLAYER_MOVE0,
+    STATE_PLAYER_MOVE1,
+    STATE_PLAYER_MOVE2,
+    STATE_PLAYER_MOVE3,
+    STATE_PLAYER_ATTACK0,
+    STATE_PLAYER_ATTACK1,
+    STATE_PLAYER_ATTACK2,
+    STATE_CURSOR0,
+    STATE_MONSTER_STAND0,
+    STATE_MAX
+} EntityState;
+
+// Define enums for sprite states
+typedef enum {
+    SPRITE_STATE_NONE = 0,
+    SPRITE_STATE_PLAYER_STAND0,
+    SPRITE_STATE_PLAYER_MOVE0,
+    SPRITE_STATE_PLAYER_MOVE1,
+    SPRITE_STATE_PLAYER_ATTACK0,
+    SPRITE_STATE_PLAYER_ATTACK1,
+    SPRITE_STATE_PLAYER_ATTACK2,
+    SPRITE_STATE_CURSOR0,
+    SPRITE_STATE_MONSTER_STAND0,
+    SPRITE_STATE_MAX
+} SpriteState;
+
+// Define enums for entity types
+typedef enum {
+    ET_NONE = 0,
+    ET_PLAYER,
+    ET_MONSTER
+} EntityType;
+
