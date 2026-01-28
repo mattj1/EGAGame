@@ -167,9 +167,20 @@ void DrawEntity(TEntity *e) {
 //        s.planes_or = 8;
     }
 
-    EGA_DrawSpriteSlow(e->origin.x, e->origin.y, &s);
+
+    EGA_DrawSpriteSlow(e->origin.x + e->mins.x, e->origin.y + e->mins.y, &s);
 #ifdef PLATFORM_DESKTOP
     Image img = EGA_Raylib_GetBackBuffer();
+
+
+    Rectangle hitbox = {
+        e->origin.x + e->mins.x,
+        e->origin.y + e->mins.y,
+        e->maxs.x - e->mins.x + 1,
+        e->maxs.y - e->mins.y + 1
+    };
+
+    ImageDrawRectangleLines(&img, hitbox, 1, RED);
 
     if(e->isMoving) {
         if (e->targetID) {
@@ -191,7 +202,7 @@ void DrawEntity(TEntity *e) {
 
 static int page = 0;
 void Draw(void) {
-    int x, y;
+    int x, y, i;
     Update2();
 
     page = 1 - page;
@@ -228,10 +239,13 @@ void Draw(void) {
     EGA_EndLatchedCopy();
 #endif
     draw_string(16, 16, 15, "Hello, world");
-
-    DrawEntity(plyr[0]);
-    DrawEntity(plyr[1]);
-    DrawEntity(monster);
+    for(i = 1; i < MAX_ENT; i++) {
+        TEntity *e = EntityForIndex(i);
+        if(!e->state) {
+            continue;
+        }
+        DrawEntity(e);
+    }
 
     EGA_DrawSpriteSlow(mouse_x - 8, mouse_y - 8, &assets.sprites[SPRITE_STATE_CURSOR0]);
 
