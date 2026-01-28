@@ -2,7 +2,11 @@ project('tg2', 'c',
         version : '1.0.0',
         default_options : ['warning_level=3', 'c_std=c99'])
 
-raylib_dep = declare_dependency(link_args:['-L.././engine/external/linux_amd64', '-lraylib'])
+if host_machine.system() == 'windows'
+    raylib_dep = declare_dependency(link_args:['-L.././engine/external/windows_mingw_w64', '-lraylib', '-lwinmm'])
+else
+    raylib_dep = declare_dependency(link_args:['-L.././engine/external/linux_amd64', '-lraylib'])
+endif
 
 source_files = [
     'src/app.c',
