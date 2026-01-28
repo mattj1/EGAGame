@@ -7,6 +7,7 @@
 
 static TMap map;
 static TEntity *plyr[2], *monster;
+u16 mouse_x, mouse_y, mouse_buttons;
 
 void shutdown(void) {
     EGA_Close();
@@ -104,7 +105,6 @@ void Raylib_DrawTile(u16 x, u16 y, Image srcImage, u16 t) {
 }
 #endif
 
-u16 mouse_x, mouse_y, mouse_buttons;
 void Update2(void) {
     int i;
 
@@ -116,15 +116,15 @@ void Update2(void) {
     Neo_Mouse_GetStatus(&mouse_x, &mouse_y, &mouse_buttons);
     mouse_x >>= 1;
 #ifdef PLATFORM_DESKTOP
-    mouse_y >>= 1;
+    EGA_Raylib_GetMouseCoords(&mouse_x, &mouse_y);
 
-    mouse_x /= 2.5;
-    mouse_y /= 2.5;
+    // mouse_x /= 2.5;
+    // mouse_y /= 2.5;
 #endif
 
     if (mouse_buttons & 1) {
         Player_SetTarget(plyr[0], mouse_x, mouse_y);
-        Player_SetTarget(plyr[1], mouse_x, mouse_y);
+        // Player_SetTarget(plyr[1], mouse_x, mouse_y);
     }
 
 
@@ -153,22 +153,27 @@ void Update2(void) {
 }
 
 void DrawEntity(TEntity *e) {
+    bounds_t bounds;
     ega_sprite_t *sprite = &assets.sprites[e->state->spriteState];
     ega_sprite_t s = *sprite;
+    EntityBounds(e, &bounds);
+
+    // Mouse highlight
+    if (BoundsContainsXY(bounds, mouse_x, mouse_y)) {
+        s.planes_and = 0x07;
+        s.planes_or = 8;
+    }
 
     if(e->flash_time > 0) {
 //         White
-        s.planes_and = 0;
-        s.planes_or = 0x0f;
+        // s.planes_and = 0;
+        // s.planes_or = 0x0f;
 
-        // Red (not very interesting)
-//        s.planes_and = 0x04;
-//        s.planes_or = 0x00;
-
-        // Mouse highlight
-//        s.planes_and = 0x07;
-//        s.planes_or = 8;
+        s.planes_and = 0x00;
+        s.planes_or = 0x08 | 0x04;
     }
+
+
 
 
     EGA_DrawSpriteSlow(e->origin.x + e->mins.x, e->origin.y + e->mins.y, &s);
@@ -339,10 +344,10 @@ int main(int argc, char *argv[]) {
     plyr[0]->origin.y = 100;
     Entity_SetState(plyr[0], STATE_PLAYER_STAND0);
 
-    plyr[1] = Entity_Alloc(ET_PLAYER);
-    plyr[1]->origin.x = 200;
-    plyr[1]->origin.y = 150;
-    Entity_SetState(plyr[1], STATE_PLAYER_STAND0);
+    // plyr[1] = Entity_Alloc(ET_PLAYER);
+    // plyr[1]->origin.x = 200;
+    // plyr[1]->origin.y = 150;
+    // Entity_SetState(plyr[1], STATE_PLAYER_STAND0);
 
     monster = Entity_Alloc(ET_MONSTER);
     monster->origin.x = 280;

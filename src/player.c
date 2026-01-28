@@ -114,10 +114,10 @@ void Player_SetTarget(TEntity *self, u16 x, u16 y) {
 
 void Player_Register(ent_info_t *info) {
 
-    info->mins.x = 1;
-    info->mins.y = 1;
-    info->maxs.x = 1 + 12;
-    info->maxs.y = 1 + 14;
+    info->mins.x = -6;
+    info->mins.y = -14;
+    info->maxs.x = info->mins.x + 12;
+    info->maxs.y = 0;
 
     info->collision = COLLISION_SOLID;
 
