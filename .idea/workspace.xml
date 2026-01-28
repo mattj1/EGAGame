@@ -3,13 +3,18 @@
   <component name="AutoImportSettings">
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
+  <component name="BackendCodeEditorMiscSettings">
+    <option name="/Default/Housekeeping/FeatureSuggestion/FeatureSuggestionManager/DisabledSuggesters/=SwitchToGoToActionSuggester/@EntryIndexedValue" value="true" type="bool" />
+    <option name="/Default/Housekeeping/GlobalSettingsUpgraded/IsUpgraded/@EntryValue" value="true" type="bool" />
+    <option name="/Default/RiderDebugger/RiderRestoreDecompile/RestoreDecompileSetting/@EntryValue" value="false" type="bool" />
+  </component>
   <component name="CMakeProjectFlavorService">
     <option name="flavorId" value="CMakePlainProjectFlavor" />
   </component>
   <component name="CMakeRunConfigurationManager">
     <generated>
-      <config projectName="tg2" targetName="all" />
-      <config projectName="tg2" targetName="tg2" />
+      <config projectName="EGAGame" targetName="tg2" />
+      <config projectName="EGAGame" targetName="all" />
     </generated>
   </component>
   <component name="CMakeSettings">
@@ -17,56 +22,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ffc926a4-a9cf-4659-85b6-97e5578b0cc3" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/dev/TODO.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/common.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ega.c" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/entity.c" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/level.c" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/monster.c" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/neo.c" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/player.c" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/res/res.c" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/res/res.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/trace.c" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/util.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/csv-editor.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/tg2.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/tg2.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/font.ega" beforeDir="false" afterPath="$PROJECT_DIR$/data/font.ega" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/entity_info.csv" beforeDir="false" afterPath="$PROJECT_DIR$/dev/entity_info.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/entity_states.csv" beforeDir="false" afterPath="$PROJECT_DIR$/dev/entity_states.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine" beforeDir="false" afterPath="$PROJECT_DIR$/engine" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/external/linux_amd64/libraylib.a" beforeDir="false" afterPath="$PROJECT_DIR$/engine/external/linux_amd64/libraylib.a" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/external/linux_amd64/libraylib.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/external/linux_amd64/libraylib.so.5.0.0" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/external/linux_amd64/libraylib.so.500" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/src/dos/IMAGE.PAS" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/dos/IMAGE.PAS" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/src/engine.pas" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/engine.pas" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/src/ext/gfx_ext.pas" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/ext/gfx_ext.pas" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/src/ext/image.pas" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/ext/image.pas" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/src/ext/sys.pas" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/ext/sys.pas" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/src/ext/text.pas" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/ext/text.pas" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/src/inc/image.inc" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/inc/image.inc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/engine/src/inc/sys.inc" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/fpc.cfg" beforeDir="false" afterPath="$PROJECT_DIR$/fpc.cfg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ptop.cfg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app.pas" beforeDir="false" afterPath="$PROJECT_DIR$/src/app.pas" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/common.pas" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ega.pas" beforeDir="false" afterPath="$PROJECT_DIR$/src/ega.pas" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/entity.pas" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/fixed.pas" beforeDir="false" afterPath="$PROJECT_DIR$/src/fixed.pas" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/gamedata.pas" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/level.pas" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/player.pas" beforeDir="false" afterPath="$PROJECT_DIR$/src/player.pas" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/res/res.pas" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test.asm" beforeDir="false" afterPath="$PROJECT_DIR$/src/test.asm" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trace.pas" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/process_entity_info.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools/process_entity_info.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/process_states.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools/process_states.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/processlib.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools/processlib.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/res.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools/res.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -82,7 +38,10 @@
     </projectState>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/engine" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MacroExpansionManager">
+    <option name="directoryName" value="n0lD3XcA" />
   </component>
   <component name="MesonLocalSettings">
     <option name="availableProjects">
@@ -90,14 +49,14 @@
         <entry>
           <key>
             <ExternalProjectPojo>
-              <option name="name" value="tg2" />
+              <option name="name" value="EGAGame" />
               <option name="path" value="$PROJECT_DIR$" />
             </ExternalProjectPojo>
           </key>
           <value>
             <list>
               <ExternalProjectPojo>
-                <option name="name" value="tg2" />
+                <option name="name" value="EGAGame" />
                 <option name="path" value="$PROJECT_DIR$" />
               </ExternalProjectPojo>
             </list>
@@ -120,25 +79,27 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Native Application.tg2.executor": "Debug",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "git-widget-placeholder": "v2",
-    "last_opened_file_path": "/home/matt/dos/tg2/tools",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "ml.llm.AIAssistantPromptsLibrary",
-    "structure.view.defaults.are.configured": "true",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Native Application.tg2.executor&quot;: &quot;Debug&quot;,
+    &quot;RunOnceActivity.RadMigrateCodeStyle&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Matt/dos/EGAGame/meson.build&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.keymap&quot;,
+    &quot;structure.view.defaults.are.configured&quot;: &quot;true&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected="Native Application.tg2">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="tg2" />
@@ -161,6 +122,30 @@
       <option name="OPTIONS" value="" />
       <method v="2" />
     </configuration>
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <module name="tg2" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="RUN_TOOL" value="" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration default="true" type="Python.FlaskServer">
       <module name="tg2" />
       <option name="ENV_FILES" value="" />
@@ -173,6 +158,20 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="launchJavascriptDebuger" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="Tox" factoryName="Tox">
+      <module name="tg2" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="RUN_TOOL" value="" />
       <method v="2" />
     </configuration>
     <configuration default="true" type="docs" factoryName="Docutils task">
@@ -209,7 +208,43 @@
       <option name="docutils_open_in_browser" value="false" />
       <method v="2" />
     </configuration>
+    <configuration default="true" type="tests" factoryName="Doctests">
+      <module name="tg2" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="RUN_TOOL" value="" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="all" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="EGAGame" TARGET_NAME="all" CONFIG_NAME="Default" version="1">
+      <method v="2">
+        <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="all" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="tg2" TARGET_NAME="all" CONFIG_NAME="Default" version="1">
+      <method v="2">
+        <option name="CLION.COMPOUND.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="tg2" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" WORKING_DIR="file://$PROJECT_DIR$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="EGAGame" TARGET_NAME="tg2" CONFIG_NAME="Default" version="1" RUN_TARGET_PROJECT_NAME="EGAGame" RUN_TARGET_NAME="tg2">
       <method v="2">
         <option name="CLION.COMPOUND.BUILD" enabled="true" />
       </method>
@@ -233,6 +268,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="RUN_TOOL" value="" />
       <option name="SCRIPT_NAME" value="" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -256,6 +292,31 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="RUN_TOOL" value="" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tools/res.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="res" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="RUN_TOOL" value="" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tools/res.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -276,6 +337,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="RUN_TOOL" value="" />
       <method v="2" />
     </configuration>
     <configuration default="true" type="tests" factoryName="Doctests">
@@ -289,6 +351,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="RUN_TOOL" value="" />
       <option name="SCRIPT_NAME" value="" />
       <option name="CLASS_NAME" value="" />
       <option name="METHOD_NAME" value="" />
@@ -327,6 +390,9 @@
       <updated>1767752809422</updated>
       <workItem from="1767752812731" duration="14553000" />
       <workItem from="1768112438190" duration="16609000" />
+      <workItem from="1768970952376" duration="554000" />
+      <workItem from="1768975375884" duration="7914000" />
+      <workItem from="1769496653733" duration="1212000" />
     </task>
     <servers />
   </component>

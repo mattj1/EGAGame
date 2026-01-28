@@ -117,6 +117,9 @@ void Update2(void) {
     mouse_x >>= 1;
 #ifdef PLATFORM_DESKTOP
     mouse_y >>= 1;
+
+    mouse_x /= 2.5;
+    mouse_y /= 2.5;
 #endif
 
     if (mouse_buttons & 1) {
@@ -333,6 +336,8 @@ int main(int argc, char *argv[]) {
     Entity_SetState(monster, STATE_MONSTER_STAND0);
     // Copy default tiles
     EGA_Init();
+
+
 #ifdef PLATFORM_DOS
     EGA_LoadTilesToVRAM(assets.tiles, 64, 0);
 #endif
