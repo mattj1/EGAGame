@@ -10,7 +10,6 @@ endif
 
 source_files = [
     'src/app.c',
-    'src/ega.c',
     'src/entity.c',
     'src/level.c',
     'src/monster.c',

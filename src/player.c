@@ -1,5 +1,120 @@
 #include "common.h"
 
+#define MAX_OPEN 128   /* tune to your RAM budget */
+
+typedef struct { int x, y; } Vec2;
+
+static int heuristic(Vec2 a, Vec2 b) {
+    int dx, dy;
+    /* Manhattan distance — no floats needed */
+    dx = a.x - b.x; if (dx < 0) dx = -dx;
+    dy = a.y - b.y; if (dy < 0) dy = -dy;
+
+    int v = (sqrtf((float) dx * (float)dx + (float)dy * (float)dy) * 100.0f);
+    TraceLog(LOG_INFO, "%d %d -> %d %d = %d", a.x, a.y, b.x, b.y, v);
+    return v;
+    // return dx + dy;
+}
+
+static const Vec2 dirs[9] = {
+    {-1,-1},{0,-1},{1,-1},
+    {-1,0},{0,0},{1,0},
+    {-1,1},{0,1},{1,1},
+};
+
+/* Returns path length, or -1 if no path. Fills `path` back-to-front. */
+int greedy_path(const TMap *map, Vec2 start, Vec2 goal,
+                Vec2 *path, int path_max)
+{
+    TTile *tile;
+
+    static bool  open[4096];
+    static Vec2  parent[4096];
+
+    static int   fScore[4096];
+    static int   g_cost[4096];
+
+    for (int i = 0; i < map->width * map->height; i++)
+    {
+        open[i] = false;
+        fScore[i] = 0x7fff;
+        g_cost[i] = 0x7fff;
+    }
+
+    parent[start.y * map->width + start.x] = start;
+
+    g_cost[start.y * map->width + start.x] = 0;
+    fScore[start.y * map->width + start.x] = heuristic(start, goal);
+
+    int          open_n = 0;
+
+    int best, i, d;
+    Vec2 cur, nb;
+
+    open[start.y * map->width + start.x] = true;
+
+    open_n    = 1;
+
+    while (open_n > 0) {
+        /* Pop lowest-heuristic node (small linear scan is fine at this scale) */
+        best = 0;
+
+        int f = 0x7fff;
+        for (i = 0; i < 4096; i++)
+        {
+            if (fScore[i] < fScore[best])
+                best = i;
+        }
+
+        cur = open[best];
+        open[best] = open[--open_n];
+        fScore[best] = fScore[open_n];
+
+        if (cur.x == goal.x && cur.y == goal.y) {
+            /* Reconstruct path */
+            int len = 0;
+            Vec2 n = goal;
+            while ((n.x != start.x || n.y != start.y) && len < path_max) {
+                path[(path_max - 1) - (len++)] = n;
+                n = parent[n.y * map->width + n.x];
+            }
+            return len; /* path is stored goal→start; reverse if needed */
+        }
+
+        for (d = 0; d < 9; d++) {
+            nb.x = cur.x + dirs[d].x;
+            nb.y = cur.y + dirs[d].y;
+            if (nb.x < 0 || nb.x >= map->width || nb.y < 0 || nb.y >= map->height) continue;
+            tile = Map_TileAt(map, nb.x, nb.y);
+            if (tile == NULL) continue;
+            if (tile->flags & TILEFLAG_SOLID) continue;
+
+
+            int tentative_g = g_cost[nb.y * map->width + nb.x] + heuristic(cur, nb);
+
+            /* Skip if we already have a better route to this neighbour */
+            // if (visited[nb.y * map->width + nb.x] && tentative_g >= g_cost[nb.y * map->width + nb.x]) continue; /* <-- NEW */
+            if (tentative_g >= g_cost[nb.y * map->width + nb.x]) continue; /* <-- NEW */
+
+            parent[nb.y * map->width + nb.x] = cur;
+            g_cost[nb.y * map->width + nb.x] = tentative_g;
+            fScore[nb.y * map->width + nb.x] = tentative_g + heuristic(nb, goal);
+
+            // if neighbor is not in openset, add it
+                if (open_n < MAX_OPEN) {
+                    open[open_n]   = nb;
+                    fScore[open_n] = tentative_g + heuristic(nb, goal); /* <-- NEW: f = g + h */
+                    open_n++;
+                }
+        }
+    }
+
+    return -1; /* no path */
+}
+
+
+
+
 void UpdateMoveLine(TEntity *self) {
     TVec2 dest;
     TEntity *e;
@@ -83,7 +198,7 @@ static void Player_StateChange(TEntity *self) {
 void Player_SetTarget(TEntity *self, u16 x, u16 y) {
     TEntity *e, *targetEntity = NULL;
     bounds_t bounds;
-    int i;
+    int i, j, tx0, ty0, tx1, ty1, np;
 
     for(i = 1; i < MAX_ENT; i++) {
         e = EntityForIndex(i);
@@ -102,7 +217,13 @@ void Player_SetTarget(TEntity *self, u16 x, u16 y) {
 //        printf("Target ID: %d\n", self->targetID);
         self->action = 2;
     } else {
-//        printf("move to point...\n");
+
+#ifndef PLATFORM_DOS
+
+        TraceLog(LOG_INFO, "move to point");
+
+#endif
+        // printf("move to point...\n");
         self->targetID = 0;
         self->action = 1;
         self->targetPos.x = x;
@@ -110,6 +231,51 @@ void Player_SetTarget(TEntity *self, u16 x, u16 y) {
     }
 
     UpdateMoveLine(self);
+}
+
+
+void DrawMoveDebug(TEntity *e)
+{
+#ifdef PLATFORM_DESKTOP
+    Image img = EGA_Raylib_GetBackBuffer();
+    Vec2 path[128];
+
+    if(e->isMoving) {
+        TVec2 targetPos = e->targetPos;
+        if (e->targetID) {
+            TEntity *t = EntityForID(e->targetID);
+
+            if (t) {
+                targetPos = t->origin;
+                         bounds_t otherBounds;
+                EntityBounds(t, &otherBounds);
+                TVec2 center = BoundsCenter(otherBounds);
+
+                ImageDrawLine(&img, e->origin.x, e->origin.y, center.x, center.y, RED);
+            }
+        } else {
+            ImageDrawLine(&img, e->origin.x, e->origin.y, e->targetPos.x, e->targetPos.y, RED);
+        }
+
+        int tx0 = e->origin.x >> 4;
+        int ty0 = e->origin.y >> 4;
+        int tx1 = targetPos.x >> 4;
+        int ty1 = targetPos.y >> 4;
+        int np = greedy_path(currentMap, (Vec2){tx0, ty0}, (Vec2){tx1, ty1}, &path[0], 128);
+
+        if (np != -1)
+        {
+            for (int i = 0; i < np; i++)
+            {
+                int j = (128 - np + i);
+                // TraceLog(LOG_INFO, "path[%d]: %d %d", i, path[j].x, path[j].y);
+                int left = path[j].x * 16;
+                int top = path[j].y * 16;
+                ImageDrawRectangleLines(&img, (Rectangle){left, top, 16, 16}, 1, RED);
+            }
+        }
+    }
+#endif
 }
 
 void Player_Register(ent_info_t *info) {

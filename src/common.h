@@ -82,6 +82,8 @@ typedef struct TEntity_s {
     u16 targetID;
     TVec2 targetPos;
     u16 moveLine;
+
+    TVec2 nextTile;
 } TEntity;
 
 

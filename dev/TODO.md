@@ -20,3 +20,7 @@ Alternate sprite render for Raylib version
 Movement logic
  - If targeting a point, the unit should try to move there - even if being attacked (for now)
  - If the unit is standing/waiting at a point - ???
+
+How should the tile pathfinding work?
+ - maybe they brute-force their way onto a tile until they're touching it, and brute-force their way to the next
+

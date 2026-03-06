@@ -190,21 +190,9 @@ void DrawEntity(TEntity *e) {
 
     ImageDrawRectangleLines(&img, hitbox, 1, RED);
 
-    if(e->isMoving) {
-        if (e->targetID) {
-            TEntity *t = EntityForID(e->targetID);
-            if (t) {
+    extern void DrawMoveDebug(TEntity *self);
+    DrawMoveDebug(e);
 
-                bounds_t otherBounds;
-                EntityBounds(t, &otherBounds);
-                TVec2 center = BoundsCenter(otherBounds);
-
-                ImageDrawLine(&img, e->origin.x, e->origin.y, center.x, center.y, RED);
-            }
-        } else {
-            ImageDrawLine(&img, e->origin.x, e->origin.y, e->targetPos.x, e->targetPos.y, RED);
-        }
-    }
 #endif
 }
 
