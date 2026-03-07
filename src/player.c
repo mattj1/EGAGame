@@ -6,12 +6,12 @@ typedef struct { int x, y; } Vec2;
 
 static int heuristic(Vec2 a, Vec2 b) {
     int dx, dy;
-    /* Manhattan distance — no floats needed */
-    dx = a.x - b.x; if (dx < 0) dx = -dx;
-    dy = a.y - b.y; if (dy < 0) dy = -dy;
+
+    dx = a.x - b.x;
+    dy = a.y - b.y;
 
     int v = (sqrtf((float) dx * (float)dx + (float)dy * (float)dy) * 100.0f);
-    TraceLog(LOG_INFO, "%d %d -> %d %d = %d", a.x, a.y, b.x, b.y, v);
+    // TraceLog(LOG_INFO, "%d %d -> %d %d = %d", a.x, a.y, b.x, b.y, v);
     return v;
     // return dx + dy;
 }
@@ -41,35 +41,38 @@ int greedy_path(const TMap *map, Vec2 start, Vec2 goal,
         g_cost[i] = 0x7fff;
     }
 
-    parent[start.y * map->width + start.x] = start;
+    open[start.y * map->width + start.x] = true;
+
+    // parent[start.y * map->width + start.x] = start;
 
     g_cost[start.y * map->width + start.x] = 0;
     fScore[start.y * map->width + start.x] = heuristic(start, goal);
 
-    int          open_n = 0;
-
-    int best, i, d;
+    int open_n = 1;
+    int i, d;
     Vec2 cur, nb;
 
-    open[start.y * map->width + start.x] = true;
-
-    open_n    = 1;
-
     while (open_n > 0) {
-        /* Pop lowest-heuristic node (small linear scan is fine at this scale) */
-        best = 0;
+        printf("%d\n", open_n);
 
+        int best = -1;
+        // Find current open node with lowest fScore
         int f = 0x7fff;
         for (i = 0; i < 4096; i++)
         {
-            if (fScore[i] < fScore[best])
+            if (open[i] && fScore[i] < f) {
                 best = i;
+                f = fScore[i];
+            }
         }
 
-        cur = open[best];
-        open[best] = open[--open_n];
-        fScore[best] = fScore[open_n];
+        open_n --;
+        cur.x = best % map->width;
+        cur.y = best / map->width;
 
+        open[cur.y * map->width + cur.x] = false;
+
+        printf("cur: %d %d, goal: %d %d\n", cur.x, cur.y, goal.x, goal.y);
         if (cur.x == goal.x && cur.y == goal.y) {
             /* Reconstruct path */
             int len = 0;
@@ -78,6 +81,8 @@ int greedy_path(const TMap *map, Vec2 start, Vec2 goal,
                 path[(path_max - 1) - (len++)] = n;
                 n = parent[n.y * map->width + n.x];
             }
+
+            printf("Path length: %d\n", len);
             return len; /* path is stored goal→start; reverse if needed */
         }
 
@@ -89,27 +94,24 @@ int greedy_path(const TMap *map, Vec2 start, Vec2 goal,
             if (tile == NULL) continue;
             if (tile->flags & TILEFLAG_SOLID) continue;
 
-
-            int tentative_g = g_cost[nb.y * map->width + nb.x] + heuristic(cur, nb);
+            int tentative_g = g_cost[cur.y * map->width + cur.x] + heuristic(cur, nb);
 
             /* Skip if we already have a better route to this neighbour */
             // if (visited[nb.y * map->width + nb.x] && tentative_g >= g_cost[nb.y * map->width + nb.x]) continue; /* <-- NEW */
-            if (tentative_g >= g_cost[nb.y * map->width + nb.x]) continue; /* <-- NEW */
-
-            parent[nb.y * map->width + nb.x] = cur;
-            g_cost[nb.y * map->width + nb.x] = tentative_g;
-            fScore[nb.y * map->width + nb.x] = tentative_g + heuristic(nb, goal);
-
-            // if neighbor is not in openset, add it
-                if (open_n < MAX_OPEN) {
-                    open[open_n]   = nb;
-                    fScore[open_n] = tentative_g + heuristic(nb, goal); /* <-- NEW: f = g + h */
+            if (tentative_g < g_cost[nb.y * map->width + nb.x]) {
+                parent[nb.y * map->width + nb.x] = cur;
+                g_cost[nb.y * map->width + nb.x] = tentative_g;
+                fScore[nb.y * map->width + nb.x] = tentative_g + heuristic(nb, goal);
+                if (!open[nb.y * map->width + nb.x]) {
+                    open[nb.y * map->width + nb.x] = true;
                     open_n++;
                 }
+            }
         }
     }
 
-    return -1; /* no path */
+    printf("no path");
+    return -1;
 }
 
 
