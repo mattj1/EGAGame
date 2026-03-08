@@ -1,9 +1,61 @@
 #include "common.h"
 
 #define MAX_LINES 64
+#define MAX_PATHS 32
+
+static struct
+{
+    // int8_t firstActivePath;
+    int8_t firstFreePath;
+    TPath paths[MAX_PATHS];
+} state;
 
 static TLine moveLines[MAX_LINES];
 static int lineUsed[MAX_LINES];
+
+int8_t Path_Alloc(void)
+{
+    int8_t idx;
+    TPath *p;
+
+    if (state.firstFreePath == -1)
+    {
+        return -1;
+    }
+
+    idx = state.firstFreePath;
+    p = &state.paths[idx];
+
+    for (int i = 0; i < MAX_PATH_TILES; i++)
+    {
+        p->p[i] = -1;
+    }
+
+    state.firstFreePath = p->next;
+
+    // p->next = state.firstActivePath;
+    // state.firstActivePath = idx;
+    return idx;
+}
+
+TPath *Path_Get(int8_t idx)
+{
+    if (idx >= 0 && idx < MAX_PATHS)
+    {
+        return &state.paths[idx];
+    }
+
+    return NULL;
+}
+
+void Path_Free(int8_t idx)
+{
+    if (idx >= 0 && idx < MAX_PATHS)
+    {
+        state.paths[idx].next = state.firstFreePath;
+        state.firstFreePath = idx;
+    }
+}
 
 bool BoundsContainsXY(bounds_t a, int x, int y) {
     if ((x > a.max.x) || (x < a.min.x) || (y > a.max.y) || (y < a.min.y))
@@ -61,6 +113,18 @@ void Line_InitPool(void) {
     for (i = 0; i < MAX_LINES; i++) {
         lineUsed[i] = 0;
         memset(&moveLines[i], 0, sizeof(TLine));
+    }
+
+    memset(&state.paths, 0, sizeof(TPath) * MAX_PATHS);
+
+    state.firstFreePath = 0;
+    // state.firstActivePath = -1;
+
+    for (i = 0; i < MAX_PATHS; i++)
+    {
+        state.paths[i].next = i < (MAX_PATHS-1) ? i + 1 : -1;
+
+        // TraceLog(LOG_INFO, "%d: %d", i, paths[i].next);
     }
 }
 

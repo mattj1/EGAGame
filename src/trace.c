@@ -197,8 +197,11 @@ bool WorldTrace(TVec2 origin, TVec2 delta, TVec2 mins, TVec2 maxs, TMoveInfo *tr
         }
     }
 
-    trace->result.x += origin.x + (endBounds.min.x - startBounds.min.x);
-    trace->result.y += origin.y + (endBounds.min.y - startBounds.min.y);
+
+    trace->resultDelta.x = (endBounds.min.x - startBounds.min.x);
+    trace->resultDelta.y = (endBounds.min.y - startBounds.min.y);
+    trace->result.x = origin.x + trace->resultDelta.x;
+    trace->result.y = origin.y + trace->resultDelta.y;
 
     return trace->hitType != 0;
 }

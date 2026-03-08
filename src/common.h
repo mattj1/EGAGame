@@ -84,6 +84,13 @@ typedef struct TEntity_s {
     u16 moveLine;
 
     TVec2 nextTile;
+
+    uint8_t movePhase;
+    // Current movement path. -1 is none.
+    int8_t path;
+
+    // Node the entity is moving (brute-forcing) towards
+    uint8_t nextPathNode;
 } TEntity;
 
 
@@ -95,6 +102,7 @@ typedef struct {
 
     // Final position
     TVec2 result;
+    TVec2 resultDelta;
 
     int hitType;
     u16 hitEntity;
@@ -115,6 +123,17 @@ typedef struct {
     int x, y;
 } LinePoint;
 
+#define MAX_PATH_TILES 128
+
+typedef struct TPath
+{
+    // Tile index of next point. -1 means end of path
+    int16_t p[MAX_PATH_TILES];
+
+    // Next path in linked list
+    int8_t next;
+} TPath;
+
 typedef struct TLine {
     int dx, dy, x, y, sx, sy, err, x0, y0, x1, y1;
     bool didReturnFirst;
@@ -134,6 +153,7 @@ void Entity_SetState(TEntity* e, int stateNum);
 void Entity_StandardMove(TEntity* self, int speed, EntityOnMoveCompleteFunc onMoveComplete);
 
 void EntityBounds(TEntity *e, bounds_t *bounds);
+bool Entity_GetTargetPos(TEntity* self, TVec2* targetPos);
 
 void Player_SetTarget(TEntity *self, u16 x, u16 y);
 
@@ -156,4 +176,10 @@ u16 Line_Alloc(void);
 void Line_Free(u16 index);
 TLine* Line_Get(u16 index);
 void Line_GetPoint(TLine* line, LinePoint* pt);
+
+
+int8_t Path_Alloc(void);
+TPath *Path_Get(int8_t idx);
+void Path_Free(int8_t idx);
+
 #endif

@@ -187,11 +187,10 @@ void DrawEntity(TEntity *e) {
         e->maxs.x - e->mins.x + 1,
         e->maxs.y - e->mins.y + 1
     };
-
-    ImageDrawRectangleLines(&img, hitbox, 1, RED);
-
     extern void DrawMoveDebug(TEntity *self);
-    DrawMoveDebug(e);
+
+    // ImageDrawRectangleLines(&img, hitbox, 1, RED);
+    // DrawMoveDebug(e);
 
 #endif
 }
@@ -330,6 +329,13 @@ int main(int argc, char *argv[]) {
     plyr[0] = Entity_Alloc(ET_PLAYER);
     plyr[0]->origin.x = 200;
     plyr[0]->origin.y = 100;
+
+    plyr[0]->origin.x = 30;
+    plyr[0]->origin.y = 30;
+
+
+    Player_SetTarget(plyr[0], 240, 67);
+
     Entity_SetState(plyr[0], STATE_PLAYER_STAND0);
 
     // plyr[1] = Entity_Alloc(ET_PLAYER);

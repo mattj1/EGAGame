@@ -24,3 +24,7 @@ Movement logic
 How should the tile pathfinding work?
  - maybe they brute-force their way onto a tile until they're touching it, and brute-force their way to the next
 
+ - Start by following the tile path
+ - If we touch the final tile, we go into line move
+ - If we hit the target entity at any point along the move, we can stop
+ - 
