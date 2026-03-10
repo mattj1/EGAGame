@@ -11,7 +11,7 @@ u16 mouse_x, mouse_y, mouse_buttons;
 
 void shutdown(void) {
     EGA_Close();
-    printf("Shutdown\n");
+    LogInfo("--- shutdown ---");
     Neo_Shutdown();
 }
 
@@ -108,11 +108,6 @@ void Raylib_DrawTile(u16 x, u16 y, Image srcImage, u16 t) {
 void Update2(void) {
     int i;
 
-#ifdef PLATFORM_DOS
-    //    unsigned char far *dst;
-//    unsigned char far *src;
-#endif
-
     Neo_Mouse_GetStatus(&mouse_x, &mouse_y, &mouse_buttons);
     mouse_x >>= 1;
 #ifdef PLATFORM_DESKTOP
@@ -173,13 +168,9 @@ void DrawEntity(TEntity *e) {
         s.planes_or = 0x08 | 0x04;
     }
 
-
-
-
     EGA_DrawSpriteSlow(e->origin.x + e->mins.x, e->origin.y + e->mins.y, &s);
 #ifdef PLATFORM_DESKTOP
     Image img = EGA_Raylib_GetBackBuffer();
-
 
     Rectangle hitbox = {
         e->origin.x + e->mins.x,
@@ -297,6 +288,7 @@ int main(int argc, char *argv[]) {
     (void) argv;
 
     atexit(shutdown);
+
 	Neo_Init(config);
 
     assets.sprites[SPRITE_STATE_PLAYER_STAND0] = EGA_LoadSprite("player");
@@ -333,9 +325,7 @@ int main(int argc, char *argv[]) {
     plyr[0]->origin.x = 30;
     plyr[0]->origin.y = 30;
 
-
     Player_SetTarget(plyr[0], 240, 67);
-
     Entity_SetState(plyr[0], STATE_PLAYER_STAND0);
 
     // plyr[1] = Entity_Alloc(ET_PLAYER);
@@ -347,9 +337,12 @@ int main(int argc, char *argv[]) {
     monster->origin.x = 280;
     monster->origin.y = 100;
     Entity_SetState(monster, STATE_MONSTER_STAND0);
+#ifdef PLATFORM_DOS
+    LogInfo("pause");
+    getch();
+#endif
     // Copy default tiles
     EGA_Init();
-
 
 #ifdef PLATFORM_DOS
     EGA_LoadTilesToVRAM(assets.tiles, 64, 0);

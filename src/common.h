@@ -32,7 +32,7 @@ TTile *Map_TileAt(TMap* map, u16 x, u16 y);
 #define STATE_NONE 0
 
 typedef struct {
-    int x, y;
+    int16_t x, y;
 } TVec2;
 
 typedef struct TEntity_s TEntity;

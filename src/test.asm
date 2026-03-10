@@ -5,7 +5,6 @@
 ; tasm test.s
 ; 
 .MODEL COMPACT, C
-;.MODEL SMALL, C
 .CODE
 
 ENABLE_ALL_MASK MACRO
@@ -21,7 +20,7 @@ ENABLE_ALL_PLANES MACRO
 ENDM
 
 PUBLIC EGA_Init_DOS
-EGA_Init_DOS PROC FAR
+EGA_Init_DOS PROC
     mov al, 0dh
     mov ah, 0
     int 10h
@@ -29,7 +28,7 @@ EGA_Init_DOS PROC FAR
 ENDP
 
 PUBLIC EGA_Close_DOS
-EGA_Close_DOS PROC FAR
+EGA_Close_DOS PROC
    mov al, 3
    mov ah, 0
    int 10h
@@ -37,7 +36,7 @@ EGA_Close_DOS PROC FAR
 ENDP
 
 PUBLIC EGA_SetPlanes
-EGA_SetPlanes PROC FAR
+EGA_SetPlanes PROC
     ARG planes_mask:BYTE
 
     mov dx, 3c4h
@@ -51,7 +50,7 @@ ENDP
 
 PUBLIC EGA_DrawTileFast2
 
-EGA_DrawTileFast2 PROC FAR
+EGA_DrawTileFast2 PROC
     ARG x: WORD, y: WORD, src_seg: WORD, src_offs: WORD, draw_seg: WORD
 
     uses ax, bx, es, di, ds, si
@@ -104,7 +103,7 @@ REPT 64
 ENDM
 
 PUBLIC EGA_DrawSpriteMaskFast2
-EGA_DrawSpriteMaskFast2 PROC FAR
+EGA_DrawSpriteMaskFast2 PROC
     ARG src_seg:WORD, src_offs:WORD, src_skip:WORD, dest_seg:WORD, dest_offs:WORD, dest_rewind:WORD, num_cols:WORD, num_rows:WORD
     USES ds, si, es, di, ax, bx, cx, dx
     ; ENABLE_ALL_MASK

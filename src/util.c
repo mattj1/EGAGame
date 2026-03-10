@@ -7,7 +7,7 @@ static struct
 {
     // int8_t firstActivePath;
     int8_t firstFreePath;
-    TPath paths[MAX_PATHS];
+    TPath *paths;
 } state;
 
 static TLine moveLines[MAX_LINES];
@@ -16,6 +16,7 @@ static int lineUsed[MAX_LINES];
 int8_t Path_Alloc(void)
 {
     int8_t idx;
+    int i;
     TPath *p;
 
     if (state.firstFreePath == -1)
@@ -26,7 +27,7 @@ int8_t Path_Alloc(void)
     idx = state.firstFreePath;
     p = &state.paths[idx];
 
-    for (int i = 0; i < MAX_PATH_TILES; i++)
+    for (i = 0; i < MAX_PATH_TILES; i++)
     {
         p->p[i] = -1;
     }
@@ -115,8 +116,11 @@ void Line_InitPool(void) {
         memset(&moveLines[i], 0, sizeof(TLine));
     }
 
-    memset(&state.paths, 0, sizeof(TPath) * MAX_PATHS);
+    LogInfo("Size of path: %d, paths: %d", sizeof(TPath), sizeof(TPath) * MAX_PATHS);
+    LogInfo("Size of lines: %d", sizeof(moveLines));
 
+    state.paths = malloc(sizeof(TPath) * MAX_PATHS);
+    memset(state.paths, 0, sizeof(TPath) * MAX_PATHS);
     state.firstFreePath = 0;
     // state.firstActivePath = -1;
 

@@ -19,11 +19,7 @@ void Entity_Init(void)
         entities[i].state = NULL;
     }
 
-#ifdef PLATFORM_DOS
-    TraceLog(LOG_INFO, "Entity size: %zu, array size: %zu\n", sizeof(TEntity), sizeof(entities));
-#else
-    printf("Entity size: %zu, array size: %zu\n", sizeof(TEntity), sizeof(entities));
-#endif
+    LogInfo("Entity size: %u, array size: %u\n", sizeof(TEntity), sizeof(entities));
 }
 
 TEntity* EntityForIndex(int idx)
@@ -128,25 +124,31 @@ void Entity_MoveLine(TEntity* e, int lineNum, TMoveInfo* move)
     }
 }
 
-void PathMoveStep(TEntity* self)
+void PathMoveStep(TEntity* self, EntityOnMoveCompleteFunc onMoveCompleteFunc)
 {
     TMoveInfo move;
+    TPath *path;
+    int pn, ctx, cty, tx0, ty0;
+    TVec2 dest;
+    bool valid, traceResult;
+    TLine *line;
+    LinePoint pt;
+    bounds_t selfBounds, nextBounds;
 
     if (self->path != -1)
     {
-        TPath* path = Path_Get(self->path);
+        path = Path_Get(self->path);
 
         // LogInfo("Move along path... Next node: %d", self->nextPathNode);
 
-        int pn = path->p[self->nextPathNode];
+        pn = path->p[self->nextPathNode];
 
         if (pn == -1)
         {
             // Are we at the end of the path?
             self->movePhase = 2;
 
-            TVec2 dest;
-            bool valid = Entity_GetTargetPos(self, &dest);
+            valid = Entity_GetTargetPos(self, &dest);
             if (!valid)
             {
                 self->isMoving = false;
@@ -161,11 +163,9 @@ void PathMoveStep(TEntity* self)
                 self->moveLine = Line_Alloc();
                 if (self->moveLine != 0)
                 {
-                    TLine *line = Line_Get(self->moveLine);
+                    line = Line_Get(self->moveLine);
                     // Initialize the movement line
                     Line_Init(line, self->origin.x, self->origin.y, dest.x, dest.y);
-
-                    LinePoint pt;
 
                     // step the line maybe?
                     Line_GetPoint(line, &pt);
@@ -175,21 +175,18 @@ void PathMoveStep(TEntity* self)
             return;
         }
 
-        bounds_t nextBounds;
-
-        int ctx = self->origin.x >> 4;
-        int cty = self->origin.y >> 4;
+        ctx = self->origin.x >> 4;
+        cty = self->origin.y >> 4;
 
         // Are we in the next node?
-        int tx0 = pn % currentMap->width;
-        int ty0 = pn / currentMap->width;
+        tx0 = pn % currentMap->width;
+        ty0 = pn / currentMap->width;
 
         nextBounds.min.x = tx0 * 16;
         nextBounds.min.y = ty0 * 16;
         nextBounds.max.x = nextBounds.min.x + 16;
         nextBounds.max.y = nextBounds.min.y + 16;
 
-        bounds_t selfBounds;
         EntityBounds(self, &selfBounds);
 
         // LogInfo("current tile: %d %d, target: %d %d", ctx, cty, tx0, ty0);
@@ -211,7 +208,21 @@ void PathMoveStep(TEntity* self)
             move.collisionMask = COLLISION_SOLID;
             move.ignoreEntity = self->id;
             move.ignoreEntity2 = 0;
-            bool traceResult = WorldTrace(self->origin, delta, self->mins, self->maxs, &move);
+            traceResult = WorldTrace(self->origin, delta, self->mins, self->maxs, &move);
+
+            if (move.hitType == HIT_TYPE_ENTITY && move.hitEntity == self->targetID)
+            {
+                LogInfo("Hit the target entity!");
+
+                self->isMoving = false;
+
+                if (onMoveCompleteFunc)
+                {
+                    onMoveCompleteFunc(self, move);
+                }
+
+                return;
+            }
 
             // LogInfo("result delta: %d %d", move.resultDelta.x, move.resultDelta.y);
 
@@ -320,8 +331,8 @@ void Entity_StandardMove(TEntity* self, int speed, EntityOnMoveCompleteFunc onMo
             // No move phase
             break;
         case 1:
-            PathMoveStep(self);
-            if (self->movePhase == 2)
+            PathMoveStep(self, onMoveComplete);
+            if (self->isMoving && self->movePhase == 2)
             {
                 LineMoveStep(self, onMoveComplete);
             }
