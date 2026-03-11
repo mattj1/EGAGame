@@ -118,7 +118,7 @@ void Update2(void) {
 #endif
 
     if (mouse_buttons & 1) {
-        Player_SetTarget(plyr[0], mouse_x, mouse_y);
+        Entity_SetTarget(plyr[0], mouse_x, mouse_y);
         // Player_SetTarget(plyr[1], mouse_x, mouse_y);
     }
 
@@ -180,8 +180,8 @@ void DrawEntity(TEntity *e) {
     };
     extern void DrawMoveDebug(TEntity *self);
 
-    // ImageDrawRectangleLines(&img, hitbox, 1, RED);
-    // DrawMoveDebug(e);
+    ImageDrawRectangleLines(&img, hitbox, 1, RED);
+    DrawMoveDebug(e);
 
 #endif
 }
@@ -325,8 +325,6 @@ int main(int argc, char *argv[]) {
     plyr[0]->origin.x = 30;
     plyr[0]->origin.y = 30;
 
-    Player_SetTarget(plyr[0], 240, 67);
-    Entity_SetState(plyr[0], STATE_PLAYER_STAND0);
 
     // plyr[1] = Entity_Alloc(ET_PLAYER);
     // plyr[1]->origin.x = 200;
@@ -337,6 +335,9 @@ int main(int argc, char *argv[]) {
     monster->origin.x = 280;
     monster->origin.y = 100;
     Entity_SetState(monster, STATE_MONSTER_STAND0);
+
+    Entity_SetState(plyr[0], STATE_PLAYER_STAND0);
+    Entity_SetTarget(plyr[0], 282, 90);
 #ifdef PLATFORM_DOS
     LogInfo("pause");
     getch();

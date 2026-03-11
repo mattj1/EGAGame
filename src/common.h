@@ -38,6 +38,8 @@ typedef struct {
 typedef struct TEntity_s TEntity;
 typedef struct ent_info_s ent_info_t;
 
+
+typedef void (*EntityInitFunc)(TEntity *data);
 typedef void (*EntityFrameFunc)(TEntity *data);
 typedef void (*EntityStateChangeFunc)(TEntity *data);
 typedef void (*EntityRegisterFunc)(ent_info_t *info);
@@ -47,6 +49,7 @@ typedef struct ent_info_s {
     TVec2 mins, maxs;
     u16 collision;
 
+    EntityInitFunc initFunc;
     EntityFrameFunc frameFunc;
     EntityStateChangeFunc stateChangeFunc;
 } ent_info_t;
@@ -91,8 +94,17 @@ typedef struct TEntity_s {
 
     // Node the entity is moving (brute-forcing) towards
     uint8_t nextPathNode;
+
+    uint8_t pathUpdateTime;
+
+    uint8_t data[32];
 } TEntity;
 
+typedef struct
+{
+    int16_t time;
+    uint8_t dir;
+} TMonsterData;
 
 typedef struct {
     // Params
@@ -155,7 +167,7 @@ void Entity_StandardMove(TEntity* self, int speed, EntityOnMoveCompleteFunc onMo
 void EntityBounds(TEntity *e, bounds_t *bounds);
 bool Entity_GetTargetPos(TEntity* self, TVec2* targetPos);
 
-void Player_SetTarget(TEntity *self, u16 x, u16 y);
+void Entity_SetTarget(TEntity *self, u16 x, u16 y);
 
 void RegisterEntities(void);
 

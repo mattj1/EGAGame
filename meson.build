@@ -13,6 +13,7 @@ source_files = [
     'src/entity.c',
     'src/level.c',
     'src/monster.c',
+    'src/move.c',
     'src/player.c',
     'src/neo.c',
     'src/trace.c',

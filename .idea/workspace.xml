@@ -67,6 +67,11 @@
         </entry>
       </map>
     </option>
+    <option name="projectSyncType">
+      <map>
+        <entry key="$PROJECT_DIR$" value="RE_IMPORT" />
+      </map>
+    </option>
   </component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="CurrentFile" />
@@ -108,6 +113,11 @@
   }
 }</component>
   <component name="RunManager" selected="Native Application.tg2">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="all" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="EGAGame" TARGET_NAME="all" CONFIG_NAME="Default" version="1">
       <method v="2">
         <option name="CLION.COMPOUND.BUILD" enabled="true" />
@@ -177,7 +187,8 @@
       <workItem from="1772659631452" duration="15269000" />
       <workItem from="1772844821220" duration="967000" />
       <workItem from="1772851495195" duration="36176000" />
-      <workItem from="1773109383389" duration="775000" />
+      <workItem from="1773109383389" duration="4249000" />
+      <workItem from="1773194422011" duration="3400000" />
     </task>
     <servers />
   </component>
@@ -191,6 +202,11 @@
           <url>file://$PROJECT_DIR$/engine/src/neo.h</url>
           <line>8</line>
           <option name="timeStamp" value="6" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/src/entity.c</url>
+          <line>393</line>
+          <option name="timeStamp" value="9" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

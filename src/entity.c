@@ -65,6 +65,11 @@ TEntity* Entity_Alloc_Slot(int entity_type, int entityNo)
     e->moveLine = 0;
     e->path = -1;
 
+    if (e->info->initFunc)
+    {
+        e->info->initFunc(e);
+    }
+
     Entity_SetState(e, STATE_NONE);
 
     return e;
@@ -310,6 +315,58 @@ void LineMoveStep(TEntity* self, EntityOnMoveCompleteFunc onMoveComplete)
     }
 }
 
+void Entity_TargetMove(TEntity *self, EntityOnMoveCompleteFunc onMoveComplete)
+{
+
+}
+
+void Entity_SetTarget(TEntity* self, u16 x, u16 y)
+{
+    TEntity *e, *targetEntity = NULL;
+    bounds_t bounds;
+    int i, j, tx0, ty0, tx1, ty1, np;
+
+    for (i = 1; i < MAX_ENT; i++)
+    {
+        e = EntityForIndex(i);
+        if (e && e != self && e->classID == ET_MONSTER)
+        {
+            EntityBounds(e, &bounds);
+
+            if (BoundsContainsXY(bounds, x, y))
+            {
+                targetEntity = e;
+                break;
+            }
+        }
+    }
+
+    if (targetEntity != NULL)
+    {
+        self->targetID = targetEntity->id;
+        //        printf("Target ID: %d\n", self->targetID);
+        self->action = 2;
+        self->pathUpdateTime = 0;
+    }
+    else
+    {
+#ifndef PLATFORM_DOS
+
+        TraceLog(LOG_INFO, "move to point");
+
+#endif
+        // printf("move to point...\n");
+        self->targetID = 0;
+        self->action = 1;
+        self->targetPos.x = x;
+        self->targetPos.y = y;
+    }
+
+    self->movePhase = 1;
+
+    UpdateMoveLine(self);
+}
+
 void Entity_StandardMove(TEntity* self, int speed, EntityOnMoveCompleteFunc onMoveComplete)
 {
     // TMoveInfo move;
@@ -318,6 +375,25 @@ void Entity_StandardMove(TEntity* self, int speed, EntityOnMoveCompleteFunc onMo
     if (!self->isMoving)
     {
         return;
+    }
+
+    if (self->action == 2)
+    {
+        // TODO: Path should only update if the target moved by more than some small amount
+
+        // Could also check if the target point moved
+        if (++self->pathUpdateTime > 12)
+        {
+            self->pathUpdateTime = 0;
+
+            UpdateMoveLine(self);
+
+            if (self->action == 0)
+            {
+                // TODO: Check if we're still targeting the entity (it may no longer exist)
+                LogInfo("Couldn't update path");
+            }
+        }
     }
 
     self->moveCount += speed;
