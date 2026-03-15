@@ -1,4 +1,5 @@
 import struct
+from dataclasses import dataclass
 
 from PIL import Image, ImageFont, ImageDraw
 
@@ -211,21 +212,60 @@ def process_font(input_file, output_file_ega, output_file_png):
     atlas.save(output_file_png, "png")
 
 
-def main():
-    process_font("/home/matt/Downloads/my 3x5 tiny mono pixel font.ttf",
-                 "/home/matt/dos/tg2/data/font.ega",
-                 "/home/matt/dos/tg2/dev/font.png")
-
-    #return
-    convert_tile("dev/tile.png", "data/tile.ega")
     # convert_file("/home/matt/dos/ega/sprite.png", "/home/matt/dos/ega/sprite.ega", write_mask=True)
     # convert_sprite("/home/matt/dos/ega/sprite2.png", "/home/matt/dos/tg2/sprite2.ega", transparent_index=13)
     # convert_sprite("/home/matt/dos/ega/sprite3.png", "/home/matt/dos/tg2/sprite3.ega", transparent_index=13)
-    convert_sprite("dev/player.png", "data/player.ega")
-    for i in range(2, 7):
-        convert_sprite(f"dev/player{i}.png", f"data/player{i}.ega")
-    convert_sprite("dev/monster.png", "data/monster.ega")
-    convert_sprite("dev/cursor.png", "data/cursor.ega")
+
+def convert_multiple_sprites(input_file, params: list[SpriteConvertInput]):
+    # print(f"Convert Sprite: {input_file} -> {output_file}")
+
+    pixels = load_bmp(input_file)
+    width = len(pixels[0])
+    height = len(pixels)
+    print(f"Size: {width} x {height}")
+    # Convert 8x8 sub-regions to EGA data, so the final data is several 40-byte chunks
+
+    # if transparent_index == -1:
+    #     transparent_index = pixels[0][0]
+
+    # print(f"Transparent index: {transparent_index}")
+    for p in params:
+        final_data = bytearray()
+        for x in range(p.x, p.x + p.width, 8):
+            data = convert_subregion(pixels, x, p.y, 8, p.height, transparent_index=-1, write_mask=True)
+            final_data += data
+
+        with open(p.output_file, 'wb') as f:
+            f.write(struct.pack('<H', p.width >> 3))
+            f.write(struct.pack('<H', p.height))
+            f.write(final_data)
+
+@dataclass
+class SpriteConvertInput:
+    x: int
+    y: int
+    width: int
+    height: int
+    output_file: str
+
+def main():
+    # process_font("/home/matt/Downloads/my 3x5 tiny mono pixel font.ttf", "/home/matt/dos/tg2/data/font.ega", "/home/matt/dos/tg2/dev/font.png")
+
+    # convert_tile("dev/tile.png", "data/tile.ega")
+    # convert_sprite("dev/player.png", "data/player.ega")
+    # for i in range(2, 7):
+        # convert_sprite(f"dev/player{i}.png", f"data/player{i}.ega")
+    # convert_sprite("dev/monster.png", "data/monster.ega")
+    # convert_sprite("dev/monster2.png", "data/monster2.ega")
+    # convert_sprite("dev/swipe.png", "data/swipe.ega")
+
+    convert_multiple_sprites("dev/gfx.png", [
+        SpriteConvertInput(x=32, y=32, width=16, height=16, output_file="data/cursor.ega"),
+        SpriteConvertInput(x=48, y=0, width=16, height=16, output_file="data/swipe.ega"),
+        SpriteConvertInput(x=0, y=80, width=16, height=24, output_file="data/monster2.ega")
+    ])
+
+    # convert_sprite("dev/cursor.png", "data/cursor.ega")
 
     process_states()
 

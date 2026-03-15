@@ -1,10 +1,10 @@
 :RESTART
 @config -set cpu cycles 360000
-@REM 132x60
+132x60
 del app.exe
 tasm /mx src\test.asm
 @if errorlevel 1 goto DONE
-c:\tc\bin\tcc -M -mc -Iengine\src -Isrc\ -DPLATFORM_DOS src\*.c src\res\res.c test.obj
+c:\tc\bin\tcc -mc -Iengine\src -Isrc\ -DPLATFORM_DOS src\*.c src\res\res.c test.obj
 @REM Why doesn't -mc work?
 @if errorlevel 1 goto DONE
 @config -set cpu cycles 2400

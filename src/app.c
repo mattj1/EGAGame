@@ -139,7 +139,9 @@ void Update2(void) {
 
         e->stateTime--;
         if(e->stateTime == 0) {
-            Entity_SetState(e, e->state->nextState);
+            entity_state_t *es = &entity_states[e->state];
+            Entity_SetState(e, es->nextState);
+
             if(e->info->stateChangeFunc) {
                 e->info->stateChangeFunc(e);
             }
@@ -149,7 +151,8 @@ void Update2(void) {
 
 void DrawEntity(TEntity *e) {
     bounds_t bounds;
-    ega_sprite_t *sprite = &assets.sprites[e->state->spriteState];
+    entity_state_t *es = &entity_states[e->state];
+    ega_sprite_t *sprite = &assets.sprites[es->spriteState];
     ega_sprite_t s = *sprite;
     EntityBounds(e, &bounds);
 
@@ -279,9 +282,14 @@ void EGA_LoadTilesToVRAM(ega_tile_t *tiles, int numTiles, int vramStartIndex) {
 
 int main(int argc, char *argv[]) {
     neo_config_t config = {
-            "NEO Engine",
-            Update,
-            Draw
+        "NEO Engine",
+#ifdef PLATFORM_DOS
+        "COM1",
+#else
+        NULL,
+#endif
+        Update,
+        Draw
     };
 
     (void) argc;
@@ -297,8 +305,11 @@ int main(int argc, char *argv[]) {
     assets.sprites[SPRITE_STATE_PLAYER_ATTACK0] = EGA_LoadSprite("player4");
     assets.sprites[SPRITE_STATE_PLAYER_ATTACK1] = EGA_LoadSprite("player5");
     assets.sprites[SPRITE_STATE_PLAYER_ATTACK2] = EGA_LoadSprite("player6");
-    assets.sprites[SPRITE_STATE_MONSTER_STAND0] = EGA_LoadSprite("monster");
+    // assets.sprites[SPRITE_STATE_MONSTER_STAND0] = EGA_LoadSprite("monster");
+    assets.sprites[SPRITE_STATE_MONSTER_STAND0] = EGA_LoadSprite("monster2");
     assets.sprites[SPRITE_STATE_CURSOR0] = EGA_LoadSprite("cursor");
+    assets.sprites[SPRITE_STATE_SWIPE0] = EGA_LoadSprite("swipe");
+
 #ifdef PLATFORM_DOS
     LoadFile("data/tile.ega", &assets.tiles, 8192);
     LoadFile("data/font.ega", assets.font_data, 3072);

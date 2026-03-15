@@ -7,3 +7,4 @@
 *.ppu
 *.res
 *.o
+.venv

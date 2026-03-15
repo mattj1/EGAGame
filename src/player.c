@@ -19,18 +19,26 @@ static void Player_Update(TEntity* self)
 
 static void Player_StateChange(TEntity* self)
 {
-    (void)self;
-    if (self->state->state == STATE_PLAYER_ATTACK2)
+    TEntity* target, *fx;
+    if (self->state == STATE_PLAYER_ATTACK2)
     {
         //        printf("Damage target\n");
 
         if (self->targetID != 0)
         {
-            TEntity* target = EntityForID(self->targetID);
+            target = EntityForID(self->targetID);
             if (target != NULL)
             {
                 target->flash_time = 8;
                 //                target->health -= 1;
+                fx = Entity_Alloc(ET_EFFECT);
+                if (fx != NULL)
+                {
+                    fx->origin = target->origin;
+                    fx->origin.x -= 6;
+                    fx->origin.y -= 12;
+                    Entity_SetState(fx, STATE_SWIPE0);
+                }
             }
         }
     }

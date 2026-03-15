@@ -35,14 +35,13 @@ typedef struct {
     int16_t x, y;
 } TVec2;
 
-typedef struct TEntity_s TEntity;
-typedef struct ent_info_s ent_info_t;
+struct TEntity_s;
+struct ent_info_s;
 
-
-typedef void (*EntityInitFunc)(TEntity *data);
-typedef void (*EntityFrameFunc)(TEntity *data);
-typedef void (*EntityStateChangeFunc)(TEntity *data);
-typedef void (*EntityRegisterFunc)(ent_info_t *info);
+typedef void (*EntityInitFunc)(struct TEntity_s *data);
+typedef void (*EntityFrameFunc)(struct TEntity_s *data);
+typedef void (*EntityStateChangeFunc)(struct TEntity_s *data);
+typedef void (*EntityRegisterFunc)(struct ent_info_s *info);
 
 typedef struct ent_info_s {
     const char *className;
@@ -76,7 +75,7 @@ typedef struct TEntity_s {
     bool isMoving;
     u16 nudge_time;
     u16 flash_time;
-    entity_state_t* state;
+    u16 state;
     u16 stateTime;
     ent_info_t* info;
     u16 collision;
@@ -181,6 +180,7 @@ bounds_t UnionBounds(bounds_t a, bounds_t b);
 bounds_t BoundsFromSize(TVec2 origin, TVec2 mins, TVec2 maxs);
 bounds_t OffsetBounds(bounds_t bounds, TVec2 offset);
 TVec2 BoundsCenter(bounds_t bounds);
+int16_t BoundsDistance(bounds_t b0, bounds_t b1);
 
 void Line_InitPool(void);
 void Line_Init(TLine* line, int x0, int y0, int x1, int y1);

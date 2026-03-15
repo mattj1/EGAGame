@@ -11,6 +11,7 @@ typedef enum {
     STATE_PLAYER_ATTACK2,
     STATE_CURSOR0,
     STATE_MONSTER_STAND0,
+    STATE_SWIPE0,
     STATE_MAX
 } EntityState;
 
@@ -25,6 +26,7 @@ typedef enum {
     SPRITE_STATE_PLAYER_ATTACK2,
     SPRITE_STATE_CURSOR0,
     SPRITE_STATE_MONSTER_STAND0,
+    SPRITE_STATE_SWIPE0,
     SPRITE_STATE_MAX
 } SpriteState;
 
@@ -32,6 +34,7 @@ typedef enum {
 typedef enum {
     ET_NONE = 0,
     ET_PLAYER,
-    ET_MONSTER
+    ET_MONSTER,
+    ET_EFFECT,
 } EntityType;
 

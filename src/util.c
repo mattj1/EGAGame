@@ -72,6 +72,44 @@ bool BoundsIntersectsBounds(bounds_t b0, bounds_t b1) {
     return 1;
 }
 
+// Returns max separation distance
+int16_t BoundsDistance(bounds_t b0, bounds_t b1)
+{
+    int16_t maxX = -32768;
+
+    int16_t i = b1.min.x - b0.max.x;
+    if (i > maxX)
+    {
+        maxX = i;
+    }
+
+    i = b0.min.x - b1.max.x;
+    if (i > maxX)
+    {
+        maxX = i;
+    }
+
+
+    i = b1.min.y - b0.max.y;
+    if (i > maxX)
+    {
+        maxX = i;
+    }
+
+    i = b0.min.y - b1.max.y;
+    if (i > maxX)
+    {
+        maxX = i;
+    }
+
+    // if (maxX < 0)
+    // {
+    //     maxX = 0;
+    // }
+
+    return maxX;
+}
+
 bounds_t UnionBounds(bounds_t a, bounds_t b) {
     bounds_t result;
 
