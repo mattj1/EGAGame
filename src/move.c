@@ -374,9 +374,16 @@ void PathMoveStep(TEntity* self, EntityOnMoveCompleteFunc onMoveCompleteFunc)
             delta.x = tx0 - ctx;
             delta.y = ty0 - cty;
 
-            move.collisionMask = COLLISION_SOLID;
+            move.targetedEntity = -1;
+            move.collisionMask = COLLISION_SOLID | COLLISION_ALWAYS_SOLID;
             move.ignoreEntity = self->id;
             move.ignoreEntity2 = 0;
+
+            if (self->action == 2)
+            {
+                move.targetedEntity = self->targetID;
+            }
+
             traceResult = WorldTrace(self->origin, delta, self->mins, self->maxs, &move);
 
             if (move.hitType == HIT_TYPE_ENTITY && move.hitEntity == self->targetID)
@@ -539,6 +546,7 @@ void Entity_StandardMove(TEntity* self, int speed, EntityOnMoveCompleteFunc onMo
 
         } else
         {
+            self->action = 0;
             //
         }
     }
@@ -589,8 +597,5 @@ void Entity_StandardMove(TEntity* self, int speed, EntityOnMoveCompleteFunc onMo
         default:
             break;
         }
-
-
-
     }
 }

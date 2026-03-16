@@ -3,11 +3,30 @@
 
 static void OnMoveComplete(TEntity* self, TMoveInfo move)
 {
+    TEntity *target;
+
     Entity_SetState(self, STATE_PLAYER_STAND0);
+
     if (self->targetID != 0 && move.hitEntity == self->targetID)
     {
+        target = EntityForID(self->targetID);
+        if (target)
+        {
+            if (target->classID == ET_GOLD)
+            {
+                LogInfo("Got some gold");
+                Entity_Free(target);
+            } else if (target->classID == ET_MONSTER)
+            {
+                Entity_SetState(self, STATE_PLAYER_ATTACK0);
+            }
+        } else
+        {
+            printf("Target no longer exists");
+            self->action = 0;
+
+        }
         //        printf("Player moved into target\n");
-        Entity_SetState(self, STATE_PLAYER_ATTACK0);
     }
 }
 
@@ -30,7 +49,7 @@ static void Player_StateChange(TEntity* self)
             if (target != NULL)
             {
                 target->flash_time = 8;
-                //                target->health -= 1;
+                target->hp -= 1;
                 fx = Entity_Alloc(ET_EFFECT);
                 if (fx != NULL)
                 {
@@ -39,12 +58,18 @@ static void Player_StateChange(TEntity* self)
                     fx->origin.y -= 12;
                     Entity_SetState(fx, STATE_SWIPE0);
                 }
+
+                if (target->hp <= 0)
+                {
+                    Entity_Free(target);
+                }
+            } else
+            {
+                Entity_SetState(self, STATE_PLAYER_STAND0);
             }
         }
     }
 }
-
-
 
 void DrawMoveDebug(TEntity* e)
 {

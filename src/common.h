@@ -26,9 +26,14 @@ TTile *Map_TileAt(TMap* map, u16 x, u16 y);
 
 #define MAX_ENT 64
 #define TILEFLAG_SOLID 1
-#define ENTFLAG_ACTIVE 1
-#define ENTFLAG_VISIBLE 2
-#define COLLISION_SOLID 1
+#define ENTFLAG_ACTIVE      0x01
+#define ENTFLAG_VISIBLE     0x02
+#define ENTFLAG_HAS_TOOLTIP 0x04
+
+
+#define COLLISION_SOLID        0x01    // Blocks only if targeted (default for most things)
+#define COLLISION_ALWAYS_SOLID 0x02    // Blocks all the time
+
 #define STATE_NONE 0
 
 typedef struct {
@@ -41,7 +46,9 @@ struct ent_info_s;
 typedef void (*EntityInitFunc)(struct TEntity_s *data);
 typedef void (*EntityFrameFunc)(struct TEntity_s *data);
 typedef void (*EntityStateChangeFunc)(struct TEntity_s *data);
+typedef void (*EntityTooltipFunc)(struct TEntity_s *data);
 typedef void (*EntityRegisterFunc)(struct ent_info_s *info);
+typedef void (*EntityDamageFunc)(struct TEntity_s *self, int amount);
 
 typedef struct ent_info_s {
     const char *className;
@@ -51,6 +58,8 @@ typedef struct ent_info_s {
     EntityInitFunc initFunc;
     EntityFrameFunc frameFunc;
     EntityStateChangeFunc stateChangeFunc;
+    EntityTooltipFunc tooltipFunc;
+    EntityDamageFunc damageFunc;
 } ent_info_t;
 
 typedef struct {
@@ -96,6 +105,7 @@ typedef struct TEntity_s {
 
     uint8_t pathUpdateTime;
 
+    int16_t hp;
     uint8_t data[32];
 } TEntity;
 
@@ -110,6 +120,7 @@ typedef struct {
     int collisionMask;
     int ignoreEntity;
     int ignoreEntity2;
+    int targetedEntity;
 
     // Final position
     TVec2 result;
@@ -193,5 +204,7 @@ void Line_GetPoint(TLine* line, LinePoint* pt);
 int8_t Path_Alloc(void);
 TPath *Path_Get(int8_t idx);
 void Path_Free(int8_t idx);
+
+void R_DrawStringCentered(u16 x, u16 y, u16 color, const char *s);
 
 #endif

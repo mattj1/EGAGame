@@ -216,6 +216,14 @@ def process_font(input_file, output_file_ega, output_file_png):
     # convert_sprite("/home/matt/dos/ega/sprite2.png", "/home/matt/dos/tg2/sprite2.ega", transparent_index=13)
     # convert_sprite("/home/matt/dos/ega/sprite3.png", "/home/matt/dos/tg2/sprite3.ega", transparent_index=13)
 
+@dataclass
+class SpriteConvertInput:
+    x: int
+    y: int
+    width: int
+    height: int
+    output_file: str
+
 def convert_multiple_sprites(input_file, params: list[SpriteConvertInput]):
     # print(f"Convert Sprite: {input_file} -> {output_file}")
 
@@ -240,13 +248,6 @@ def convert_multiple_sprites(input_file, params: list[SpriteConvertInput]):
             f.write(struct.pack('<H', p.height))
             f.write(final_data)
 
-@dataclass
-class SpriteConvertInput:
-    x: int
-    y: int
-    width: int
-    height: int
-    output_file: str
 
 def main():
     # process_font("/home/matt/Downloads/my 3x5 tiny mono pixel font.ttf", "/home/matt/dos/tg2/data/font.ega", "/home/matt/dos/tg2/dev/font.png")
@@ -256,18 +257,19 @@ def main():
     # for i in range(2, 7):
         # convert_sprite(f"dev/player{i}.png", f"data/player{i}.ega")
     # convert_sprite("dev/monster.png", "data/monster.ega")
-    # convert_sprite("dev/monster2.png", "data/monster2.ega")
-    # convert_sprite("dev/swipe.png", "data/swipe.ega")
 
     convert_multiple_sprites("dev/gfx.png", [
+        SpriteConvertInput(x=64, y=0, width=16, height=16, output_file="data/gold.ega"),
         SpriteConvertInput(x=32, y=32, width=16, height=16, output_file="data/cursor.ega"),
         SpriteConvertInput(x=48, y=0, width=16, height=16, output_file="data/swipe.ega"),
-        SpriteConvertInput(x=0, y=80, width=16, height=24, output_file="data/monster2.ega")
+        SpriteConvertInput(x=0, y=80, width=16, height=24, output_file="data/monster2.ega"),
+
+        SpriteConvertInput(x=0, y=48, width=16, height=16, output_file="data/moveto0.ega"),
+        SpriteConvertInput(x=16, y=48, width=16, height=16, output_file="data/moveto1.ega"),
+        SpriteConvertInput(x=32, y=48, width=16, height=16, output_file="data/moveto2.ega"),
     ])
 
-    # convert_sprite("dev/cursor.png", "data/cursor.ega")
-
-    process_states()
+    # process_states()
 
 if __name__ == "__main__":
     main()

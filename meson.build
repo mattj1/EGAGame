@@ -11,6 +11,7 @@ endif
 source_files = [
     'src/app.c',
     'src/entity.c',
+    'src/item.c',
     'src/level.c',
     'src/monster.c',
     'src/move.c',
@@ -30,7 +31,7 @@ include_directories = [
 tg2 = executable('tg2', source_files, install : true,
                 dependencies: [raylib_dep],
                 include_directories : include_directories,
-                c_args: ['-DPLATFORM_DESKTOP'],
+                c_args: ['-DPLATFORM_DESKTOP', '-Wno-unknown-pragmas'],
                 link_args: ['-lm']
                 )
 

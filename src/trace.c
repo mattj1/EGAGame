@@ -26,10 +26,16 @@ static void CollectEntities(TMoveInfo *trace) {
 
     for (i = 1; i < MAX_ENT; i++) {
         e = EntityForIndex(i);
-        if (!e->state
+        if (!e
+            || !e->state
             || e->id == trace->ignoreEntity
             || e->id == trace->ignoreEntity2
             || (e->collision & trace->collisionMask) == 0) continue;
+
+        if ((e->collision & trace->collisionMask & COLLISION_SOLID) && (e->id != trace->targetedEntity))
+        {
+            continue;
+        }
 
         EntityBounds(e, &bounds);
         bounds.max.x += 1;

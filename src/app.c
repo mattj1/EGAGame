@@ -6,7 +6,7 @@
 #endif
 
 static TMap map;
-static TEntity *plyr[2], *monster;
+static TEntity *plyr[2];
 u16 mouse_x, mouse_y, mouse_buttons;
 
 void shutdown(void) {
@@ -36,10 +36,12 @@ struct {
 
 
 void draw_string(u16 x, u16 y, u16 color, const char *s) {
+#ifdef PLATFORM_DOS
     u16 is_shift = 0;
+    ega_sprite_t fs;
+#endif
     int i;
     u16 ch;
-    ega_sprite_t fs;
     int l = strlen(s);
     x = x & 0xfffc;
 
@@ -71,7 +73,6 @@ void draw_string(u16 x, u16 y, u16 color, const char *s) {
     dstRect.width = 4;
     dstRect.height = 8;
 
-
     for(i = 0; i < l; i++) {
         ch = s[i] - 32;
 
@@ -84,6 +85,11 @@ void draw_string(u16 x, u16 y, u16 color, const char *s) {
         ImageDraw(&img, assets.raylib_font, srcRect, dstRect, WHITE);
     }
 #endif
+}
+
+void R_DrawStringCentered(u16 x, u16 y, u16 color, const char *s)
+{
+    draw_string(x - strlen(s) * 2, y, color, s);
 }
 
 #ifdef PLATFORM_DESKTOP
@@ -105,8 +111,11 @@ void Raylib_DrawTile(u16 x, u16 y, Image srcImage, u16 t) {
 }
 #endif
 
+static u16 prevMouseButtons = 0;
+
 void Update2(void) {
     int i;
+    TEntity *e;
 
     Neo_Mouse_GetStatus(&mouse_x, &mouse_y, &mouse_buttons);
     mouse_x >>= 1;
@@ -117,15 +126,22 @@ void Update2(void) {
     // mouse_y /= 2.5;
 #endif
 
-    if (mouse_buttons & 1) {
+    if ((mouse_buttons ^ prevMouseButtons) & 1 && mouse_buttons & 1) {
         Entity_SetTarget(plyr[0], mouse_x, mouse_y);
+
+        e = Entity_Alloc(ET_EFFECT);
+        e->origin.x = mouse_x - 8;
+        e->origin.y = mouse_y - 8;
+        Entity_SetState(e, STATE_UI_MOVETO0);
+
         // Player_SetTarget(plyr[1], mouse_x, mouse_y);
     }
 
+    prevMouseButtons = mouse_buttons;
 
     for(i = 1; i < MAX_ENT; i++) {
         TEntity *e = EntityForIndex(i);
-        if(!e->state) {
+        if(!e) {
             continue;
         }
 
@@ -149,6 +165,9 @@ void Update2(void) {
     }
 }
 
+int tooltipEntities[16];
+int toolTipEntityCount;
+
 void DrawEntity(TEntity *e) {
     bounds_t bounds;
     entity_state_t *es = &entity_states[e->state];
@@ -160,6 +179,8 @@ void DrawEntity(TEntity *e) {
     if (BoundsContainsXY(bounds, mouse_x, mouse_y)) {
         s.planes_and = 0x07;
         s.planes_or = 8;
+
+        tooltipEntities[toolTipEntityCount ++] = e->id;
     }
 
     if(e->flash_time > 0) {
@@ -183,8 +204,8 @@ void DrawEntity(TEntity *e) {
     };
     extern void DrawMoveDebug(TEntity *self);
 
-    ImageDrawRectangleLines(&img, hitbox, 1, RED);
-    DrawMoveDebug(e);
+    // ImageDrawRectangleLines(&img, hitbox, 1, RED);
+    // DrawMoveDebug(e);
 
 #endif
 }
@@ -192,6 +213,7 @@ void DrawEntity(TEntity *e) {
 static int page = 0;
 void Draw(void) {
     int x, y, i;
+    toolTipEntityCount = 0;
     Update2();
 
     page = 1 - page;
@@ -227,15 +249,26 @@ void Draw(void) {
 #ifdef PLATFORM_DOS
     EGA_EndLatchedCopy();
 #endif
-    draw_string(16, 16, 15, "Hello, world");
+
     for(i = 1; i < MAX_ENT; i++) {
         TEntity *e = EntityForIndex(i);
-        if(!e->state) {
+        if(!e) {
             continue;
         }
         DrawEntity(e);
     }
 
+    for (i = 0; i < toolTipEntityCount; i++)
+    {
+        TEntity *e = EntityForID(tooltipEntities[i]);
+        if (e && e->classID && e->info->tooltipFunc)
+        {
+            char buf[32];
+            e->info->tooltipFunc(e);
+            // draw_string_centered(mouse_x, mouse_y - 16, 15, buf);
+        }
+    }
+    // draw_string_centered(mouse_x, mouse_y - 16, 15, "Hello, world");
     EGA_DrawSpriteSlow(mouse_x - 8, mouse_y - 8, &assets.sprites[SPRITE_STATE_CURSOR0]);
 
     EGA_ShowPage(page);
@@ -281,6 +314,7 @@ void EGA_LoadTilesToVRAM(ega_tile_t *tiles, int numTiles, int vramStartIndex) {
 #endif
 
 int main(int argc, char *argv[]) {
+    TEntity *monster, *gold;
     neo_config_t config = {
         "NEO Engine",
 #ifdef PLATFORM_DOS
@@ -309,6 +343,10 @@ int main(int argc, char *argv[]) {
     assets.sprites[SPRITE_STATE_MONSTER_STAND0] = EGA_LoadSprite("monster2");
     assets.sprites[SPRITE_STATE_CURSOR0] = EGA_LoadSprite("cursor");
     assets.sprites[SPRITE_STATE_SWIPE0] = EGA_LoadSprite("swipe");
+    assets.sprites[SPRITE_STATE_GOLD0] = EGA_LoadSprite("gold");
+    assets.sprites[SPRITE_STATE_UI_MOVETO0] = EGA_LoadSprite("moveto0");
+    assets.sprites[SPRITE_STATE_UI_MOVETO1] = EGA_LoadSprite("moveto1");
+    assets.sprites[SPRITE_STATE_UI_MOVETO2] = EGA_LoadSprite("moveto2");
 
 #ifdef PLATFORM_DOS
     LoadFile("data/tile.ega", &assets.tiles, 8192);
@@ -343,12 +381,20 @@ int main(int argc, char *argv[]) {
     // Entity_SetState(plyr[1], STATE_PLAYER_STAND0);
 
     monster = Entity_Alloc(ET_MONSTER);
+    monster->hp = 3;
     monster->origin.x = 280;
     monster->origin.y = 100;
     Entity_SetState(monster, STATE_MONSTER_STAND0);
 
     Entity_SetState(plyr[0], STATE_PLAYER_STAND0);
     Entity_SetTarget(plyr[0], 282, 90);
+
+    gold = Entity_Alloc(ET_GOLD);
+    gold->origin.x = 64;
+    gold->origin.y = 64;
+    Entity_SetState(gold, STATE_GOLD0);
+
+
 #ifdef PLATFORM_DOS
     LogInfo("pause");
     getch();

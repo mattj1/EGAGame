@@ -55,6 +55,27 @@ static void Monster_Init(TEntity *self)
     data->dir = 2;
     data->time = 60;
 }
+// #define COMPONENT_TYPE_HEALTH 0
+//
+// static void Monster_GetComponent(TEntity *self, int componentType, void **out)
+// {
+//
+//     *out = NULL;
+//     if (componentType == COMPONENT_TYPE_HEALTH)
+//     {
+//
+//     }
+// }
+//
+// typedef struct component_health_t {
+//     int hp;
+// };
+
+void Monster_Damage(TEntity *self, int amount)
+{
+    self->hp -= amount;
+
+}
 
 void Monster_Register(ent_info_t *info) {
 
@@ -63,9 +84,10 @@ void Monster_Register(ent_info_t *info) {
     info->maxs.x = info->mins.x + 14;
     info->maxs.y = 0;
 
-    info->collision = 1;
+    info->collision = COLLISION_SOLID;
 
     info->initFunc = Monster_Init;
     info->frameFunc = Monster_Update;
     info->stateChangeFunc = Monster_StateChange;
+    info->damageFunc = Monster_Damage;
 }

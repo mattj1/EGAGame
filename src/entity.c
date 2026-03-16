@@ -16,7 +16,7 @@ void Entity_Init(void)
     for (i = 0; i < MAX_ENT; i++)
     {
         entities[i].id = 0;
-        entities[i].state = NULL;
+        entities[i].state = 0;
     }
 
     LogInfo("Entity size: %u, array size: %u\n", sizeof(TEntity), sizeof(entities));
@@ -24,7 +24,18 @@ void Entity_Init(void)
 
 TEntity* EntityForIndex(int idx)
 {
-    return &entities[idx];
+    TEntity *e = &entities[idx];
+    if (idx < 0 || idx >= MAX_ENT)
+    {
+        return NULL;
+    }
+
+    if (e->classID == ET_NONE)
+    {
+        return NULL;
+    }
+
+    return e;
 }
 
 TEntity* EntityForID(int id)
@@ -40,6 +51,12 @@ void Entity_SetState(TEntity* e, int stateNum)
     entity_state_t *es = &entity_states[stateNum];
     e->state = stateNum;
     e->stateTime = es->numFrames;
+
+    if (e->state == STATE_NONE)
+    {
+        e->classID = ET_NONE;
+        e->flags = 0;
+    }
 }
 
 TEntity* Entity_Alloc_Slot(int entity_type, int entityNo)
@@ -52,6 +69,8 @@ TEntity* Entity_Alloc_Slot(int entity_type, int entityNo)
 
     e->info = &ent_info[entity_type];
     e->flags = ENTFLAG_ACTIVE | ENTFLAG_VISIBLE;
+    e->state = STATE_NONE;
+
     e->nudge_time = 0;
     e->flash_time = 0;
     e->stateSpeed = 1;
@@ -70,8 +89,6 @@ TEntity* Entity_Alloc_Slot(int entity_type, int entityNo)
     {
         e->info->initFunc(e);
     }
-
-    Entity_SetState(e, STATE_NONE);
 
     return e;
 }
@@ -114,7 +131,7 @@ void Entity_SetTarget(TEntity* self, u16 x, u16 y)
     for (i = 1; i < MAX_ENT; i++)
     {
         e = EntityForIndex(i);
-        if (e && e != self && e->classID == ET_MONSTER)
+        if (e && e != self)
         {
             EntityBounds(e, &bounds);
 
@@ -163,9 +180,11 @@ void RegisterEntities(void)
 {
     extern void Player_Register(ent_info_t* info);
     extern void Monster_Register(ent_info_t* info);
+    extern void Gold_Register(ent_info_t* info);
 
     RegisterEntity(ET_PLAYER, Player_Register);
     RegisterEntity(ET_MONSTER, Monster_Register);
+    RegisterEntity(ET_GOLD, Gold_Register);
 }
 
 void EntityBounds(TEntity* e, bounds_t* bounds)

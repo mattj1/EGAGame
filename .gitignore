@@ -8,3 +8,4 @@
 *.res
 *.o
 .venv
+__pycache__
